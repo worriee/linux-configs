@@ -188,3 +188,147 @@ Alternatively, re-add them manually via **Settings → Keyboard → Application 
 - Flameshot saves to `/home/julry/Pictures` — change the username in the command if your new laptop uses a different user.
 
 ---
+
+## 5. No-Reboot Reset & System Cleanup
+
+### 5A. Restart the Entire Desktop Session (Closest to a Full Reboot)
+
+Kills the graphical session, logs you out, restarts the display manager, and clears loaded desktop memory — without touching the kernel or power state.
+
+```bash
+sudo systemctl restart lightdm
+```
+
+**Warning: Save your work first.** Restarting LightDM terminates your current session, so unsaved work in editors or browsers will be lost.
+
+### 5B. Restart Only the XFCE Desktop & Panel (Keeps Apps Open)
+
+Reloads the interface without losing open browser tabs or terminal windows. Fixes frozen panel, glitchy UI, or stale theme.
+
+```bash
+xfce4-panel -r && xfwm4 --replace &
+```
+
+- `xfce4-panel -r` reloads the taskbar, tray icons, and widgets.
+- `xfwm4 --replace` restarts the window manager to fix stutters, borders, or compositor lag.
+
+### 5C. Clear RAM & Buffer Cache (Memory Refresh)
+
+Gets a fresh-boot-like memory state after closing heavy applications.
+
+```bash
+sudo sync && echo 3 | sudo tee /proc/sys/vm/drop_caches
+```
+
+Writes pending data to disk (`sync`), then flushes pagecache, dentries, and inodes to free memory immediately.
+
+### 5D. Restart the Network Stack (Wi-Fi & Bluetooth)
+
+Fixes Wi-Fi or Bluetooth that stopped responding, without rebooting.
+
+```bash
+sudo systemctl restart NetworkManager
+```
+
+### 5E. Remove Unused Packages & Their Config Files (One Command)
+
+Removes orphaned dependencies, packages with leftover config files (`rc` status), clears the apt cache, and drops unused Flatpak runtimes:
+
+```bash
+sudo apt autoremove --purge -y && sudo apt purge -y $(dpkg -l | grep '^rc' | awk '{print $2}') 2>/dev/null; sudo apt clean && flatpak uninstall --unused -y
+```
+
+What each part does:
+
+- `apt autoremove --purge -y` — removes packages no longer needed, including their config files.
+- `apt purge -y $(dpkg -l | grep '^rc' | ...)` — finds packages marked `rc` (removed but config left behind) and purges them. `2>/dev/null` suppresses the error when there are none.
+- `apt clean` — deletes downloaded `.deb` files from the apt cache.
+- `flatpak uninstall --unused -y` — removes Flatpak runtimes and extensions no app uses.
+
+---
+
+## 6. Application Autostart Configuration
+
+Location in system: **Settings** → **Session and Startup** → **Application Autostart**
+
+### Checked (Active on Login)
+
+- [x] **im-launch**
+- [x] **NetworkManager Applet** *(Manage your network connections)*
+- [x] **picom** *(An X compositor)*
+- [x] **Plank**
+- [x] **PolicyKit Authentication Agent** *(PolicyKit Authentication Agent)*
+- [x] **Power Manager** *(Power management for the Xfce desktop)*
+- [x] **PulseAudio Sound System** *(Start the PulseAudio Sound System)*
+- [x] **Screen Locker** *(Launch screen locker program)*
+- [x] **Update Manager** *(Linux Mint Update Manager)*
+- [x] **User folders update** *(Update common folders names to match current locale)*
+- [x] **User folders update**
+- [x] **Warpinator** *(Transfer files from one computer to another on the local network)*
+- [x] **xapp-sn-watcher** *(A service that provides the org.kde.StatusNotifierWatcher interface for XApps)*
+- [x] **Xfce Notification Daemon**
+- [x] **Xfce Settings Daemon** *(The Xfce Settings Daemon)*
+
+### Unchecked (Disabled on Login)
+
+- [ ] **AT-SPI D-Bus Bus**
+- [ ] **Blueman Applet** *(Blueman Bluetooth Manager)*
+- [ ] **Events and Tasks Reminders** *(Event and task notifications)*
+- [ ] **Geoclue Demo agent**
+- [ ] **mintwelcome** *(Linux Mint Welcome Screen)*
+- [ ] **Print Queue Applet** *(System tray icon for managing print jobs)*
+- [ ] **Sticky Notes** *(Create and manage sticky notes on your desktop)*
+- [ ] **Support for NVIDIA Prime** *(Shows a tray icon when a compatible NVIDIA Optimus graphics card is detected)*
+- [ ] **System Reports** *(Troubleshoot problems)*
+- [ ] **xiccd** *(Applies color management profiles to your session)*
+- [ ] **Certificate and Key Storage** *(GNOME Keyring: PKCS#11 Component)*
+- [ ] **gnome-disk-utility notification plugin for GNOME Settings Daemon**
+- [ ] **Onboard** *(Flexible onscreen keyboard)*
+- [ ] **Orca Screen Reader**
+- [ ] **Secret Storage Service** *(GNOME Keyring: Secret Service)*
+- [ ] **SSH Key Agent** *(GNOME Keyring: SSH Agent)*
+
+### Commands for Checked Autostart Apps
+
+The command each checked app actually runs at login (captured from `/etc/xdg/autostart/` and `~/.config/autostart/`). Verified on this system: `picom` and `plank` both resolve to `/usr/bin/picom` and `/usr/bin/plank`.
+
+| App | Command |
+| --- | --- |
+| im-launch | `sh -c 'IM_CONFIG_CHECK_ENV=1 im-launch true'` |
+| NetworkManager Applet | `nm-applet` |
+| picom | `picom` |
+| Plank | `plank` |
+| PolicyKit Authentication Agent | `/usr/lib/policykit-1-gnome/polkit-gnome-authentication-agent-1` |
+| Power Manager | `xfce4-power-manager` |
+| PulseAudio Sound System | `start-pulseaudio-x11` |
+| Screen Locker | `light-locker` |
+| Update Manager | `mintupdate-launcher` |
+| User folders update | `xdg-user-dirs-gtk-update` |
+| User folders update (2nd) | `xdg-user-dirs-update` |
+| Warpinator | `warpinator --autostart` |
+| xapp-sn-watcher | `/usr/lib/x86_64-linux-gnu/xapps/xapp-sn-watcher` |
+| Xfce Notification Daemon | `sh -c "systemctl --user start xfce4-notifyd.service 2>/dev/null \|\| exec /usr/lib/x86_64-linux-gnu/xfce4/notifyd/xfce4-notifyd"` |
+| Xfce Settings Daemon | `xfsettingsd` |
+
+### How to Restore on New Laptop
+
+All checked apps above are **system defaults** — on a fresh Mint XFCE install they are active automatically, so no action is needed for them. Only **Plank** is a user-added autostart entry.
+
+1. Copy the saved autostart files from this repo into place (restores the disabled state + enables Plank):
+
+```bash
+mkdir -p ~/.config/autostart
+cp linux-configs/.config/autostart/*.desktop ~/.config/autostart/
+```
+
+*(Adjust `linux-configs/` to wherever this repo lives on the new laptop)*
+
+2. Log out and back in for the changes to take effect.
+
+**Beginner note:** The `Hidden=true` files are just as important as the enabled one. They override the system defaults in `/etc/xdg/autostart/` — for example, the disabled `mintwelcome.desktop` and `mintreport.desktop` files are what stop the Mint Welcome Screen and System Reports from popping up at every login. Copy them all, exactly as saved, to keep the same behavior.
+
+### Alternative: Set Them in the GUI
+
+**Settings → Session and Startup → Application Autostart** — tick or untick each app there. Same result, done visually.
+
+---
