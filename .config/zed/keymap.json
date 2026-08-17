@@ -1,0 +1,53 @@
+// Zed keymap
+//
+// For information on binding keys, see the Zed
+// documentation: https://zed.dev/docs/key-bindings
+//
+// To see the default key bindings run `zed: open default keymap`
+// from the command palette.
+[
+  {
+    "context": "Workspace",
+    "bindings": {
+      "shift shift": "file_finder::Toggle",
+      "alt-p": "project_panel::ToggleFocus",
+      "alt-g": "git_panel::ToggleFocus",
+    },
+  },
+  {
+    "context": "Editor || vim_mode == insert",
+    "bindings": {
+      // "j k": "vim::NormalBefore"
+      "alt-o": "workspace::ActivatePaneRight",
+    },
+  },
+  {
+    "context": "Terminal",
+    "bindings": {
+      "alt-o": "workspace::ActivatePaneLeft",
+      "ctrl-p": ["terminal::SendKeystroke", "ctrl-p"],
+      "ctrl-f": ["terminal::SendKeystroke", "ctrl-f"],
+      "ctrl-a": ["terminal::SendKeystroke", "ctrl-a"],
+      "ctrl-b": ["terminal::SendKeystroke", "ctrl-b"],
+      "ctrl-d": ["terminal::SendKeystroke", "ctrl-d"],
+      "ctrl-r": ["terminal::SendKeystroke", "ctrl-r"],
+      "ctrl-l": ["terminal::SendKeystroke", "ctrl-l"],
+      "ctrl-n": ["terminal::SendKeystroke", "ctrl-n"],
+      "ctrl-m": ["terminal::SendKeystroke", "ctrl-m"],
+      "ctrl-e": ["terminal::SendKeystroke", "ctrl-e"],
+      "ctrl-g": ["terminal::SendKeystroke", "ctrl-g"],
+      "ctrl-c": ["terminal::SendKeystroke", "ctrl-c"],
+      "ctrl-t": ["terminal::SendKeystroke", "ctrl-t"],
+      "ctrl-s": null,
+      "alt-l": ["terminal::SendText", "/resume\r"],
+      "alt-m": ["terminal::SendText", "/model\r"],
+      "alt-shift-c": ["terminal::SendText", "/chrome\r"],
+      "alt-u": ["terminal::SendText", "/undo\r"],
+      "alt-r": ["terminal::SendText", "/redo\r"],
+      "alt-q": ["terminal::SendText", "/quit\r"],
+      "alt-n": ["terminal::SendText", "/new\r"],
+      "alt-c": ["terminal::SendText", "/compact\r"],
+      "alt-f": ["terminal::SendText", "/fork\r"],
+    },
+  },
+]

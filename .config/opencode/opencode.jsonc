@@ -1,0 +1,43 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "compaction": {
+    "threshold": 0.8,
+    "strategy": "summarize",
+    "preserveRecentMessages": 10,
+    "preserveSystemPrompt": true,
+  },
+  "provider": {
+    "opencode": {
+      "models": {
+        "deepseek-v4-flash-free": {
+          "limit": {
+            "context": 1000000,
+            "output": 128000,
+          },
+        },
+        "mimo-v2.5-free": {
+          "limit": {
+            "context": 1000000,
+            "output": 128072,
+          },
+        },
+      },
+    },
+  },
+  "plugin": [
+    "opencode-caveman",
+    "opencode-ponytail"
+  ],
+  "mcp": {
+    "obsidian": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "@modelcontextprotocol/server-filesystem",
+        "/home/julry/Documents/Personal_Notes/Memory"
+      ],
+      "enabled": true
+    }
+  }
+}
