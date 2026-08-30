@@ -391,3 +391,61 @@ Then reload the panel:
 xfce4-panel -r
 ```
 
+---
+
+## 8. Login Screen UI (Slick-Greeter Top-Right Minimal)
+
+Configures the default Mint login screen (slick-greeter) to show **only** the battery percentage and a full date + 12-hour clock, both in the top-right corner (order: battery → date → time). Everything else in the top panel is hidden.
+
+### Apply the Config
+
+The greeter reads `/etc/lightdm/slick-greeter.conf`. Replace it with:
+
+```bash
+sudo tee /etc/lightdm/slick-greeter.conf > /dev/null <<'EOF'
+[Greeter]
+background=/usr/share/backgrounds/background.jpg
+content-align=center
+draw-user-backgrounds=true
+show-clock=true
+clock-format=%A, %B %d  %I:%M %p
+show-power=true
+show-quit=false
+show-keyboard=false
+show-a11y=false
+show-hostname=false
+EOF
+```
+
+### What Each Option Does
+
+| Option | Value | Meaning |
+| --- | --- | --- |
+| `background` | `/usr/share/backgrounds/background.jpg` | Wallpaper shown on the login screen |
+| `content-align` | `center` | Center the login box vertically/horizontally |
+| `draw-user-backgrounds` | `true` | Use the logged-in user's wallpaper behind the login box |
+| `show-clock` | `true` | Show the clock (top-right) |
+| `clock-format` | `%A, %B %d  %I:%M %p` | Full date + 12-hour time, e.g. `Sunday, August 30  08:05 PM` |
+| `show-power` | `true` | Show battery icon + percentage (top-right, left of clock) |
+| `show-quit` | `false` | Hide the shutdown/suspend/quit menu |
+| `show-keyboard` | `false` | Hide the keyboard layout indicator |
+| `show-a11y` | `false` | Hide the accessibility menu |
+| `show-hostname` | `false` | Hide the hostname label |
+
+### Result
+
+Top-right corner, left to right: **battery icon + percentage** → **full date and 12-hour time**. Nothing else in the top panel.
+
+### Notes
+
+- **Battery only appears when on battery power** — while plugged into AC it is hidden by the greeter.
+- `show-quit=false` removes the shutdown/suspend/quit menu from the login screen. Re-enable it with `show-quit=true`.
+- The bottom-left session selector (e.g. `Xfce Session`) is a separate widget and is not affected.
+- The config applies after a display manager restart:
+
+```bash
+sudo systemctl restart lightdm
+```
+
+*(This logs you out — save your work first.)*
+

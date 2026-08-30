@@ -2,17 +2,18 @@
 
 ## 0. Last Checkpoint
 
-- **Last Sync**: August 30, 2026, 07:03 PM PST
+- **Last Sync**: August 30, 2026, 09:23 PM PST
 
 ## 1. Recent Changes (Git)
 
 - **Vault Path**: [set after first `-obsidian`]
-- **Last Scan**: August 30, 2026, 07:03 PM PST
+- **Last Scan**: August 30, 2026, 09:23 PM PST
 
 > `-context` scan: `git status` + `git diff` + `git log @{u}..HEAD`. LIFO, newest on top.
 
 | File | Status | Δ Lines | What Changed |
 |---|---|---|---|
+| `mint-setup.md` | M | +58 | Section 8 added (Slick-Greeter login screen config: top-right minimal — battery + full date + 12h clock only; show-quit/keyboard/a11y/hostname disabled) |
 | `.opencode/rules/.clinerules` | M | — | Template v5.0 update from upstream |
 | `.opencode/rules/system_instructions.md` | M | — | Template v5.0 update from upstream |
 | `.opencode/skills/*/SKILL.md` | M | — | All 8 skill files updated |
@@ -40,7 +41,7 @@ _New files visual:_
 .themes/Gruvbox-BL-LB-Dark-Soft-xhdpi/xfwm4/
 ```
 
-- **Unpushed**: 0 commits | **Staged**: 0 | **Unstaged**: ~390 | **Untracked**: 4 dirs
+- **Unpushed**: 0 commits | **Staged**: 0 | **Unstaged**: 1 (mint-setup.md, +58) | **Untracked**: 0
 - **Total Δ**: +514 / −17,574 lines (massive theme swap WhiteSur-Dark → Gruvbox)
 
 ---
@@ -55,6 +56,7 @@ _New files visual:_
 
 ## 3. Important Details
 
+- Login screen reverted to stock slick-greeter: web-greeter removed from system AND from mint-setup.md Section 8 → replaced with slick-greeter config as new Section 8
 - Theme swap: WhiteSur-Dark deleted, Gruvbox-BL-LB-Dark-Soft added (with hdpi/xhdpi xfwm4 variants)
 - mint-setup.md: expanded with keybinds, autostart, panel styling, web-greeter content
 - `.config/gtk-3.0/` tracked for GTK3 settings
@@ -63,6 +65,8 @@ _New files visual:_
 ---
 
 ## 4. Completed
+
+### [DONE] Login screen reverted to stock slick-greeter + minimal top-right config — August 30, 2026
 
 ### [DONE] Initial -context sync — August 30, 2026
 
@@ -76,7 +80,7 @@ _New files visual:_
 
 ## 6. Next Move
 
-1. Commit theme swap (Gruvbox in, WhiteSur out) + mint-setup.md updates
+1. Commit pending changes (theme swap + mint-setup.md updates)
 2. Future: copy repo configs to new laptop via setup guide
 
 ---
