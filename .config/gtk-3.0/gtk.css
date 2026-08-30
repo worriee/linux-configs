@@ -1,0 +1,16 @@
+.xfce4-panel {
+    border-radius: 16px !important;
+}
+
+.xfce4-panel button,
+.xfce4-panel button:hover,
+.xfce4-panel button:checked,
+.xfce4-panel .flat,
+.xfce4-panel .flat:hover {
+    background-color: transparent !important;
+    background-image: none !important;
+    border: none !important;
+    box-shadow: none !important;
+    margin: 0 !important;
+    padding: 0 4px !important;
+}

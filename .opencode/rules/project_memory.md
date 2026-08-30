@@ -1,110 +1,96 @@
 # Project Memory & Context Tracker
 
-## 0. Last Synchronized Checkpoint
+## 0. Last Checkpoint
 
-- **Last AI Analysis Timestamp**: August 17, 2026, 08:11 PM PST
+- **Last Sync**: August 30, 2026, 07:03 PM PST
 
-## 1. Project Overview
+## 1. Recent Changes (Git)
 
-### Project Identity
+- **Vault Path**: [set after first `-obsidian`]
+- **Last Scan**: August 30, 2026, 07:03 PM PST
 
-- **Project Name**: linux-configs
-- **Primary Goal**: centralize and version-control user's Linux desktop configuration files (dotfiles)
-- **Target Users / Audience**: the owner (single-user dev machine)
-- **Current Phase**: Maintenance
-- **Active Branch**: main (git repo)
+> `-context` scan: `git status` + `git diff` + `git log @{u}..HEAD`. LIFO, newest on top.
 
-### Key Constraints
+| File | Status | Δ Lines | What Changed |
+|---|---|---|---|
+| `.opencode/rules/.clinerules` | M | — | Template v5.0 update from upstream |
+| `.opencode/rules/system_instructions.md` | M | — | Template v5.0 update from upstream |
+| `.opencode/skills/*/SKILL.md` | M | — | All 8 skill files updated |
+| `.opencode/workspace.json` | M | — | template_version 4.5 → 5.0 |
+| `mint-setup.md` | M | +107 | Sections 7–8 added (panel styling, web-greeter) |
+| `.themes/WhiteSur-Dark/*` | D | ~17,000+ | Full WhiteSur-Dark theme removed |
+| `.themes/Gruvbox-BL-LB-Dark-Soft/` | A (untracked) | — | Gruvbox theme added (cinnamon, gnome-shell, gtk-2.0/3.0/4.0, xfwm4, metacity, plank) |
+| `.themes/Gruvbox-BL-LB-Dark-Soft-hdpi/` | A (untracked) | — | Gruvbox hdpi variant (xfwm4 only) |
+| `.themes/Gruvbox-BL-LB-Dark-Soft-xhdpi/` | A (untracked) | — | Gruvbox xhdpi variant (xfwm4 only) |
+| `.config/gtk-3.0/gtk.css` | A (untracked) | — | GTK3 panel styling (rounded corners, transparent buttons) |
 
-_List budget, timeline, platform restrictions, team size, or technical limitations currently in effect._
+_New files visual:_
+```
+.config/gtk-3.0/           (new)
+.themes/Gruvbox-BL-LB-Dark-Soft/
+  ├── cinnamon/
+  ├── gnome-shell/
+  ├── gtk-2.0/
+  ├── gtk-3.0/
+  ├── gtk-4.0/
+  ├── metacity-1/
+  ├── plank/
+  └── xfwm4/
+.themes/Gruvbox-BL-LB-Dark-Soft-hdpi/xfwm4/
+.themes/Gruvbox-BL-LB-Dark-Soft-xhdpi/xfwm4/
+```
 
----
-
-## 2. Active Milestones & Roadmap
-
-_Track high-level releases, versions, or major feature milestones the project is working toward._
-
-### [MS-001] Milestone Title
-
-- **Target Version/Release**: _v1.0, v2.0, etc._
-- **Due Date**: _[Target completion date]_
-- **Key Deliverables**: _What must be finished for this milestone_
-- **Dependencies**: _What prerequisites must be done first_
-- **Status**: IN_PROGRESS | COMPLETED | BLOCKED
-- **Notes**: _Any additional context_
-
-_Log new milestones here in LIFO format (newest on top)._
-
----
-
-## 3. Current Sprint & Active Tasks
-
-- Initial `-setup` synchronization of dotfiles repo; no active coding tasks.
-
----
-
-## 4. Completed Milestones
-
-- [Describe the completed milestone here]
-- [Describe the completed milestone here]
+- **Unpushed**: 0 commits | **Staged**: 0 | **Unstaged**: ~390 | **Untracked**: 4 dirs
+- **Total Δ**: +514 / −17,574 lines (massive theme swap WhiteSur-Dark → Gruvbox)
 
 ---
 
-## 5. Pending Tasks & Backlog
+## 2. Objective
 
-- [Describe the pending task here]
-- [Describe the pending task here]
-
----
-
-## 6. Architectural Decisions & Constraints
-
-_Keep a running history of critical architectural choices, patterns to follow, or constraints to prevent AI hallucination or regression._
-
-### [DEC-001] Decision Title
-
-- **Context**: _Why this decision was needed (problem, requirement, constraint)_
-- **Choice Made**: _What was chosen and implemented_
-- **Alternatives Considered**: _What was rejected and why_
-- **Impact**: _What files, modules, or layers this decision affects_
-- **Date Logged**: _[Month Day, Year, HH:MM AM/PM PST]_
-
-_Log new decisions here in LIFO format (newest on top)._
+- **Purpose**: Centralize and version-control user's Linux desktop dotfiles; provide post-install setup guide for future Mint XFCE machines
+- **Goal**: One-repo backup of all theming, keybinds, panel, autostart, GTK config for consistent setup across fresh installs
+- **Users**: Single user (julry) — personal dev machine dotfiles
 
 ---
 
-## 7. MEMORY FILE REGISTRY
+## 3. Important Details
 
-All specialized memory logs are stored in `.opencode/memory/` directory:
-
-- **Error Memory**: `.opencode/memory/error_memory.md` — Active bugs, stack traces, resolution history
-- **Codebase Map**: `.opencode/memory/codebase_map.md` — Directory structure, file purposes, dependency mapping
-- **Implementation Memory**: `.opencode/memory/implementation_memory.md` — Architectural design maps, feature flows, execution roadmaps
-- **Security Memory**: `.opencode/memory/security_memory.md` — Vulnerability tracking, threat modeling, remediation plans
-- **Review Memory**: `.opencode/memory/review_memory.md` — Code review findings, quality assessments
-- **Test Memory**: `.opencode/memory/test_memory.md` — Test strategies, coverage analysis, test case documentation
-
-**Archive Files** (pre-created, receive overflow from memory files):
-
-- **Error Archive**: `.opencode/archives/error_archive.md`
-- **Implementation Archive**: `.opencode/archives/implementation_archive.md`
-- **Security Archive**: `.opencode/archives/security_archive.md`
-- **Review Archive**: `.opencode/archives/review_archive.md`
-- **Test Archive**: `.opencode/archives/test_archive.md`
-
-_Note: `codebase_map.md` and `project_memory.md` are excluded from archival._
+- Theme swap: WhiteSur-Dark deleted, Gruvbox-BL-LB-Dark-Soft added (with hdpi/xhdpi xfwm4 variants)
+- mint-setup.md: expanded with keybinds, autostart, panel styling, web-greeter content
+- `.config/gtk-3.0/` tracked for GTK3 settings
+- All .opencode/ rule files modified in this session (template v5.0 update)
 
 ---
 
-## 8. ARCHIVE STATUS
+## 4. Completed
 
-- **Archive Location**: `.opencode/archives/`
-- **Threshold**: 10 active entries per section (LIFO ordering)
-- **Archives Created**: 0
-- **Last Archive Check**: `Not yet performed`
+### [DONE] Initial -context sync — August 30, 2026
 
-| Archive File        | Source Memory | Entries Archived | Archived At (PST) |
-| ------------------- | ------------- | ---------------- | ----------------- |
-| _(No archives yet)_ |               |                  |                   |
+- First context scan complete; project_memory.md populated with repo state
+
+---
+
+## 5. Blocked
+
+---
+
+## 6. Next Move
+
+1. Commit theme swap (Gruvbox in, WhiteSur out) + mint-setup.md updates
+2. Future: copy repo configs to new laptop via setup guide
+
+---
+
+## 7. Relevant Files
+
+| Path | Why Relevant |
+|---|---|
+| `mint-setup.md` | Post-install guide — keybinds, autostart, panel, web-greeter |
+| `.themes/Gruvbox-BL-LB-Dark-Soft/` | Active theme (all variants) |
+| `.themes/Gruvbox-BL-LB-Dark-Soft-hdpi/` | HDPI xfwm4 assets |
+| `.themes/Gruvbox-BL-LB-Dark-Soft-xhdpi/` | XHDPI xfwm4 assets |
+| `.config/gtk-3.0/` | GTK3 user settings |
+| `.icons/WhiteSur-grey/` | Active icon theme (unchanged) |
+| `README.md` | Repo readme |
 
 <!-- c: worrie -->

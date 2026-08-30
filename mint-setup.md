@@ -332,3 +332,110 @@ cp linux-configs/.config/autostart/*.desktop ~/.config/autostart/
 **Settings → Session and Startup → Application Autostart** — tick or untick each app there. Same result, done visually.
 
 ---
+
+## 7. XFCE Panel Styling (Rounded Corners & Transparent Buttons)
+
+### Edit the GTK User Stylesheet
+
+Open or create `~/.config/gtk-3.0/gtk.css` and paste the following rules:
+
+```css
+.xfce4-panel {
+    border-radius: 16px !important;
+}
+
+.xfce4-panel button,
+.xfce4-panel button:hover,
+.xfce4-panel button:checked,
+.xfce4-panel .flat,
+.xfce4-panel .flat:hover {
+    background-color: transparent !important;
+    background-image: none !important;
+    border: none !important;
+    box-shadow: none !important;
+    margin: 0 !important;
+    padding: 0 4px !important;
+}
+```
+
+**What each rule does:**
+
+- `.xfce4-panel` — targets the outer panel container, curves all four corners with a 16px radius.
+- `.xfce4-panel button, .flat` — targets workspace switchers, app launchers, and applet buttons.
+- `background-color: transparent !important;` — strips background box colors and fills.
+- `border: none !important;` & `box-shadow: none !important;` — removes outlines, borders, and drop shadows.
+- `padding: 0 4px !important;` & `margin: 0 !important;` — normalizes button spacing so items fit evenly without gaps.
+
+### Reload the Panel
+
+```bash
+xfce4-panel -r
+```
+
+Restarts the panel process and applies the updated CSS stylesheet immediately without logging out.
+
+### How to Restore on New Laptop
+
+The GTK CSS file is already saved in this repo at `.config/gtk-3.0/gtk.css`. Copy it into place:
+
+```bash
+mkdir -p ~/.config/gtk-3.0
+cp linux-configs/.config/gtk-3.0/gtk.css ~/.config/gtk-3.0/
+```
+
+*(Adjust `linux-configs/` to wherever this repo lives on the new laptop)*
+
+Then reload the panel:
+
+```bash
+xfce4-panel -r
+```
+
+---
+
+## 8. Web-Greeter and Gruvbox Login Screen Setup
+
+### 1. Download and Install Web-Greeter
+
+```bash
+wget -O /tmp/web-greeter.deb https://github.com/JezerM/web-greeter/releases/download/3.5.0/web-greeter-3.5.0-ubuntu.deb
+sudo apt update && sudo apt install -y /tmp/web-greeter.deb
+```
+
+- `wget -O /tmp/web-greeter.deb ...` — downloads the Web-Greeter Debian package into `/tmp`.
+- `sudo apt install -y /tmp/web-greeter.deb` — installs Web-Greeter along with all required system libraries.
+
+### 2. Set Web-Greeter as the Default Display Manager Greeter
+
+```bash
+echo -e "[Seat:*]\ngreeter-session=web-greeter" | sudo tee /etc/lightdm/lightdm.conf.d/90-web-greeter.conf
+```
+
+Writes a configuration file telling LightDM to run `web-greeter` at startup instead of the default `slick-greeter`.
+
+### 3. Configure the Built-in Gruvbox Theme
+
+```bash
+sudo sed -i 's/theme:.*/theme: gruvbox/' /etc/lightdm/web-greeter.yml
+sudo sed -i 's/theme =.*/theme = "gruvbox"/' /etc/lightdm/web-greeter.toml 2>/dev/null || true
+```
+
+Updates the configuration files to activate the built-in `gruvbox` login theme.
+
+### 4. Test the Login Screen in a Sandbox Window
+
+```bash
+sudo apt install -y xserver-xephyr
+lightdm --test-mode --debug
+```
+
+- `sudo apt install -y xserver-xephyr` — installs Xephyr, a nested X server used for testing login screens without logging out.
+- `lightdm --test-mode --debug` — opens a test window of the login screen inside your current session. Press `Ctrl + C` in the terminal to close the test.
+
+### 5. Clean Up Temporary Installers
+
+```bash
+rm -rf /tmp/web-greeter.deb
+```
+
+Deletes the downloaded package file from `/tmp`.
