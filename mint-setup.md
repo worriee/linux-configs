@@ -175,7 +175,7 @@ mkdir -p ~/.config/xfce4/xfconf/xfce-perchannel-xml
 cp linux-configs/.config/xfce4/xfconf/xfce-perchannel-xml/xfce4-keyboard-shortcuts.xml ~/.config/xfce4/xfconf/xfce-perchannel-xml/
 ```
 
-*(Adjust `linux-configs/` to wherever this repo lives on the new laptop)*
+_(Adjust `linux-configs/` to wherever this repo lives on the new laptop)_
 
 2. Log out and back in (or restart) for the shortcuts to load.
 
@@ -254,61 +254,61 @@ Location in system: **Settings** → **Session and Startup** → **Application A
 ### Checked (Active on Login)
 
 - [x] **im-launch**
-- [x] **NetworkManager Applet** *(Manage your network connections)*
-- [x] **picom** *(An X compositor)*
+- [x] **NetworkManager Applet** _(Manage your network connections)_
+- [x] **picom** _(An X compositor)_
 - [x] **Plank**
-- [x] **PolicyKit Authentication Agent** *(PolicyKit Authentication Agent)*
-- [x] **Power Manager** *(Power management for the Xfce desktop)*
-- [x] **PulseAudio Sound System** *(Start the PulseAudio Sound System)*
-- [x] **Screen Locker** *(Launch screen locker program)*
-- [x] **Update Manager** *(Linux Mint Update Manager)*
-- [x] **User folders update** *(Update common folders names to match current locale)*
+- [x] **PolicyKit Authentication Agent** _(PolicyKit Authentication Agent)_
+- [x] **Power Manager** _(Power management for the Xfce desktop)_
+- [x] **PulseAudio Sound System** _(Start the PulseAudio Sound System)_
+- [x] **Screen Locker** _(Launch screen locker program)_
+- [x] **Update Manager** _(Linux Mint Update Manager)_
+- [x] **User folders update** _(Update common folders names to match current locale)_
 - [x] **User folders update**
-- [x] **Warpinator** *(Transfer files from one computer to another on the local network)*
-- [x] **xapp-sn-watcher** *(A service that provides the org.kde.StatusNotifierWatcher interface for XApps)*
+- [x] **Warpinator** _(Transfer files from one computer to another on the local network)_
+- [x] **xapp-sn-watcher** _(A service that provides the org.kde.StatusNotifierWatcher interface for XApps)_
 - [x] **Xfce Notification Daemon**
-- [x] **Xfce Settings Daemon** *(The Xfce Settings Daemon)*
+- [x] **Xfce Settings Daemon** _(The Xfce Settings Daemon)_
 
 ### Unchecked (Disabled on Login)
 
 - [ ] **AT-SPI D-Bus Bus**
-- [ ] **Blueman Applet** *(Blueman Bluetooth Manager)*
-- [ ] **Events and Tasks Reminders** *(Event and task notifications)*
+- [ ] **Blueman Applet** _(Blueman Bluetooth Manager)_
+- [ ] **Events and Tasks Reminders** _(Event and task notifications)_
 - [ ] **Geoclue Demo agent**
-- [ ] **mintwelcome** *(Linux Mint Welcome Screen)*
-- [ ] **Print Queue Applet** *(System tray icon for managing print jobs)*
-- [ ] **Sticky Notes** *(Create and manage sticky notes on your desktop)*
-- [ ] **Support for NVIDIA Prime** *(Shows a tray icon when a compatible NVIDIA Optimus graphics card is detected)*
-- [ ] **System Reports** *(Troubleshoot problems)*
-- [ ] **xiccd** *(Applies color management profiles to your session)*
-- [ ] **Certificate and Key Storage** *(GNOME Keyring: PKCS#11 Component)*
+- [ ] **mintwelcome** _(Linux Mint Welcome Screen)_
+- [ ] **Print Queue Applet** _(System tray icon for managing print jobs)_
+- [ ] **Sticky Notes** _(Create and manage sticky notes on your desktop)_
+- [ ] **Support for NVIDIA Prime** _(Shows a tray icon when a compatible NVIDIA Optimus graphics card is detected)_
+- [ ] **System Reports** _(Troubleshoot problems)_
+- [ ] **xiccd** _(Applies color management profiles to your session)_
+- [ ] **Certificate and Key Storage** _(GNOME Keyring: PKCS#11 Component)_
 - [ ] **gnome-disk-utility notification plugin for GNOME Settings Daemon**
-- [ ] **Onboard** *(Flexible onscreen keyboard)*
+- [ ] **Onboard** _(Flexible onscreen keyboard)_
 - [ ] **Orca Screen Reader**
-- [ ] **Secret Storage Service** *(GNOME Keyring: Secret Service)*
-- [ ] **SSH Key Agent** *(GNOME Keyring: SSH Agent)*
+- [ ] **Secret Storage Service** _(GNOME Keyring: Secret Service)_
+- [ ] **SSH Key Agent** _(GNOME Keyring: SSH Agent)_
 
 ### Commands for Checked Autostart Apps
 
 The command each checked app actually runs at login (captured from `/etc/xdg/autostart/` and `~/.config/autostart/`). Verified on this system: `picom` and `plank` both resolve to `/usr/bin/picom` and `/usr/bin/plank`.
 
-| App | Command |
-| --- | --- |
-| im-launch | `sh -c 'IM_CONFIG_CHECK_ENV=1 im-launch true'` |
-| NetworkManager Applet | `nm-applet` |
-| picom | `picom` |
-| Plank | `plank` |
-| PolicyKit Authentication Agent | `/usr/lib/policykit-1-gnome/polkit-gnome-authentication-agent-1` |
-| Power Manager | `xfce4-power-manager` |
-| PulseAudio Sound System | `start-pulseaudio-x11` |
-| Screen Locker | `light-locker` |
-| Update Manager | `mintupdate-launcher` |
-| User folders update | `xdg-user-dirs-gtk-update` |
-| User folders update (2nd) | `xdg-user-dirs-update` |
-| Warpinator | `warpinator --autostart` |
-| xapp-sn-watcher | `/usr/lib/x86_64-linux-gnu/xapps/xapp-sn-watcher` |
-| Xfce Notification Daemon | `sh -c "systemctl --user start xfce4-notifyd.service 2>/dev/null \|\| exec /usr/lib/x86_64-linux-gnu/xfce4/notifyd/xfce4-notifyd"` |
-| Xfce Settings Daemon | `xfsettingsd` |
+| App                            | Command                                                                                                                            |
+| ------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------- |
+| im-launch                      | `sh -c 'IM_CONFIG_CHECK_ENV=1 im-launch true'`                                                                                     |
+| NetworkManager Applet          | `nm-applet`                                                                                                                        |
+| picom                          | `picom`                                                                                                                            |
+| Plank                          | `plank`                                                                                                                            |
+| PolicyKit Authentication Agent | `/usr/lib/policykit-1-gnome/polkit-gnome-authentication-agent-1`                                                                   |
+| Power Manager                  | `xfce4-power-manager`                                                                                                              |
+| PulseAudio Sound System        | `start-pulseaudio-x11`                                                                                                             |
+| Screen Locker                  | `light-locker`                                                                                                                     |
+| Update Manager                 | `mintupdate-launcher`                                                                                                              |
+| User folders update            | `xdg-user-dirs-gtk-update`                                                                                                         |
+| User folders update (2nd)      | `xdg-user-dirs-update`                                                                                                             |
+| Warpinator                     | `warpinator --autostart`                                                                                                           |
+| xapp-sn-watcher                | `/usr/lib/x86_64-linux-gnu/xapps/xapp-sn-watcher`                                                                                  |
+| Xfce Notification Daemon       | `sh -c "systemctl --user start xfce4-notifyd.service 2>/dev/null \|\| exec /usr/lib/x86_64-linux-gnu/xfce4/notifyd/xfce4-notifyd"` |
+| Xfce Settings Daemon           | `xfsettingsd`                                                                                                                      |
 
 ### How to Restore on New Laptop
 
@@ -321,7 +321,7 @@ mkdir -p ~/.config/autostart
 cp linux-configs/.config/autostart/*.desktop ~/.config/autostart/
 ```
 
-*(Adjust `linux-configs/` to wherever this repo lives on the new laptop)*
+_(Adjust `linux-configs/` to wherever this repo lives on the new laptop)_
 
 2. Log out and back in for the changes to take effect.
 
@@ -341,7 +341,7 @@ Open or create `~/.config/gtk-3.0/gtk.css` and paste the following rules:
 
 ```css
 .xfce4-panel {
-    border-radius: 16px !important;
+  border-radius: 16px !important;
 }
 
 .xfce4-panel button,
@@ -349,12 +349,12 @@ Open or create `~/.config/gtk-3.0/gtk.css` and paste the following rules:
 .xfce4-panel button:checked,
 .xfce4-panel .flat,
 .xfce4-panel .flat:hover {
-    background-color: transparent !important;
-    background-image: none !important;
-    border: none !important;
-    box-shadow: none !important;
-    margin: 0 !important;
-    padding: 0 4px !important;
+  background-color: transparent !important;
+  background-image: none !important;
+  border: none !important;
+  box-shadow: none !important;
+  margin: 0 !important;
+  padding: 0 4px !important;
 }
 ```
 
@@ -383,7 +383,7 @@ mkdir -p ~/.config/gtk-3.0
 cp linux-configs/.config/gtk-3.0/gtk.css ~/.config/gtk-3.0/
 ```
 
-*(Adjust `linux-configs/` to wherever this repo lives on the new laptop)*
+_(Adjust `linux-configs/` to wherever this repo lives on the new laptop)_
 
 Then reload the panel:
 
@@ -419,18 +419,18 @@ EOF
 
 ### What Each Option Does
 
-| Option | Value | Meaning |
-| --- | --- | --- |
-| `background` | `/usr/share/backgrounds/background.jpg` | Wallpaper shown on the login screen |
-| `content-align` | `center` | Center the login box vertically/horizontally |
-| `draw-user-backgrounds` | `true` | Use the logged-in user's wallpaper behind the login box |
-| `show-clock` | `true` | Show the clock (top-right) |
-| `clock-format` | `%A, %B %d  %I:%M %p` | Full date + 12-hour time, e.g. `Sunday, August 30  08:05 PM` |
-| `show-power` | `true` | Show battery icon + percentage (top-right, left of clock) |
-| `show-quit` | `false` | Hide the shutdown/suspend/quit menu |
-| `show-keyboard` | `false` | Hide the keyboard layout indicator |
-| `show-a11y` | `false` | Hide the accessibility menu |
-| `show-hostname` | `false` | Hide the hostname label |
+| Option                  | Value                                   | Meaning                                                      |
+| ----------------------- | --------------------------------------- | ------------------------------------------------------------ |
+| `background`            | `/usr/share/backgrounds/background.jpg` | Wallpaper shown on the login screen                          |
+| `content-align`         | `center`                                | Center the login box vertically/horizontally                 |
+| `draw-user-backgrounds` | `true`                                  | Use the logged-in user's wallpaper behind the login box      |
+| `show-clock`            | `true`                                  | Show the clock (top-right)                                   |
+| `clock-format`          | `%A, %B %d  %I:%M %p`                   | Full date + 12-hour time, e.g. `Sunday, August 30  08:05 PM` |
+| `show-power`            | `true`                                  | Show battery icon + percentage (top-right, left of clock)    |
+| `show-quit`             | `false`                                 | Hide the shutdown/suspend/quit menu                          |
+| `show-keyboard`         | `false`                                 | Hide the keyboard layout indicator                           |
+| `show-a11y`             | `false`                                 | Hide the accessibility menu                                  |
+| `show-hostname`         | `false`                                 | Hide the hostname label                                      |
 
 ### Result
 
@@ -447,5 +447,94 @@ Top-right corner, left to right: **battery icon + percentage** → **full date a
 sudo systemctl restart lightdm
 ```
 
-*(This logs you out — save your work first.)*
+_(This logs you out — save your work first.)_
 
+---
+
+## 9. Acer Battery Health Mode (80% Charge Limit) — ACER LAPTOPS ONLY
+
+Replicates the **80% Battery Charge Limit** from Acer Care Center on Windows using the open-source `acer-wmi-battery` driver. **Skip this section entirely on non-Acer laptops** — the WMI interface does not exist on other brands.
+
+> Source: https://github.com/frederik-h/acer-wmi-battery
+
+### Prerequisites
+
+```bash
+sudo apt update
+sudo apt install -y build-essential linux-headers-$(uname -r) git
+```
+
+- `build-essential` — gcc, make, and system libraries for compiling kernel modules.
+- `linux-headers-$(uname -r)` — header files matching the running kernel so the module compiles cleanly.
+
+### Build and Install the Module
+
+```bash
+cd ~
+git clone https://github.com/frederik-h/acer-wmi-battery.git
+cd acer-wmi-battery
+make
+
+sudo mkdir -p /lib/modules/$(uname -r)/kernel/drivers/platform/x86/
+sudo cp acer-wmi-battery.ko /lib/modules/$(uname -r)/kernel/drivers/platform/x86/
+sudo depmod -a
+sudo modprobe acer-wmi-battery
+```
+
+- `make` — compiles `acer-wmi-battery.c` into `acer-wmi-battery.ko`.
+- `depmod -a` — updates module dependencies so modprobe finds the driver by name.
+- `modprobe acer-wmi-battery` — loads the driver into the running kernel.
+
+### Load Automatically on Boot
+
+```bash
+echo "acer-wmi-battery" | sudo tee /etc/modules-load.d/acer-wmi-battery.conf
+echo "options acer-wmi-battery enable_health_mode=1" | sudo tee /etc/modprobe.d/acer-wmi-battery.conf
+```
+
+- `modules-load.d` — systemd loads the driver at every boot.
+- `modprobe.d` — passes `enable_health_mode=1`, so the 80% limit is applied automatically at startup.
+
+### Manual Control and Status
+
+```bash
+# Check current mode (1 = 80% limit active, 0 = full 100%)
+cat /sys/bus/wmi/drivers/acer-wmi-battery/health_mode
+
+# Enable 80% charge limit
+echo 1 | sudo tee /sys/bus/wmi/drivers/acer-wmi-battery/health_mode
+
+# Allow full 100% charge
+echo 0 | sudo tee /sys/bus/wmi/drivers/acer-wmi-battery/health_mode
+```
+
+### Add them in .bashrc file for shortcut commands (Optional)
+
+```bash
+# Acer Battery Control Aliases
+# Limit charging threshold to 80%
+alias batt80='echo 1 | sudo tee /sys/bus/wmi/drivers/acer-wmi-battery/health_mode'
+
+# Allow charging threshold up to 100%
+alias batt100='echo 0 | sudo tee /sys/bus/wmi/drivers/acer-wmi-battery/health_mode'
+
+# Check active charging mode
+alias battstat='cat /sys/bus/wmi/drivers/acer-wmi-battery/health_mode'
+```
+
+- `batt80` — cap charging at 80%.
+- `batt100` — allow full 100% charge.
+- `battstatus` — show current mode (`1` or `0`).
+
+### Kernel Update Maintenance
+
+The module is compiled against the active kernel, so after a major kernel update you must recompile:
+
+```bash
+cd ~/acer-wmi-battery
+make clean
+make
+sudo cp acer-wmi-battery.ko /lib/modules/$(uname -r)/kernel/drivers/platform/x86/
+sudo depmod -a
+sudo modprobe acer-wmi-battery
+```
