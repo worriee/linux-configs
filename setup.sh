@@ -1,0 +1,138 @@
+#!/usr/bin/env bash
+# setup.sh — One-command restore of this dotfiles repo onto a fresh Linux Mint XFCE install.
+# Run from inside the cloned repo:  bash setup.sh
+# Full instructions: fresh-install.md
+
+set -u
+
+REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+HOME_DIR="${HOME}"
+OK()   { printf '  \033[32m[ok]\033[0m %s\n' "$*"; }
+WARN() { printf '  \033[33m[!!]\033[0m %s\n' "$*"; }
+STEP() { printf '\n\033[1m==> %s\033[0m\n' "$*"; }
+
+FAILED_STEPS=()
+run_step() { # run_step <label> <command...>  — a failed step is logged, not fatal
+    local label="$1"; shift
+    STEP "$label"
+    if "$@"; then OK "$label"
+    else WARN "$label failed — continuing"; FAILED_STEPS+=("$label"); fi
+}
+
+echo "==============================================="
+echo " Linux Mint XFCE dotfiles restore"
+echo " repo : $REPO"
+echo " user : $(whoami)  home: $HOME_DIR"
+echo "==============================================="
+
+# ------------------------------------------------
+# 1. Fix hardcoded paths in repo copies
+# ------------------------------------------------
+STEP "Fixing hardcoded paths (/home/julry -> $HOME_DIR)"
+sed -i "s|/home/julry|$HOME_DIR|g" \
+    "$REPO/.config/xfce4/xfconf/xfce-perchannel-xml/xfce4-keyboard-shortcuts.xml" \
+    "$REPO/.config/opencode/opencode.jsonc"
+OK "paths rewritten"
+
+# ------------------------------------------------
+# 2. Packages (sudo)
+# ------------------------------------------------
+run_step "Installing packages" bash -c 'sudo apt update && sudo apt install -y rofi flameshot plank picom neofetch sticky'
+
+# ------------------------------------------------
+# 3. Dotfiles, themes, icons, fonts
+# ------------------------------------------------
+STEP "Copying dotfiles, themes, icons, fonts"
+mkdir -p "$HOME_DIR/.config" "$HOME_DIR/.local/share/fonts" "$HOME_DIR/.themes" "$HOME_DIR/.icons"
+# -b: back up any pre-existing file as <name>~
+cp -rb "$REPO/.config/." "$HOME_DIR/.config/"
+cp -rb "$REPO/.themes/." "$HOME_DIR/.themes/"
+cp -rb "$REPO/.icons/." "$HOME_DIR/.icons/"
+cp -rb "$REPO/.local/share/fonts/." "$HOME_DIR/.local/share/fonts/"
+fc-cache -f >/dev/null 2>&1
+OK "dotfiles + fonts applied (backups: <file>~)"
+
+# ------------------------------------------------
+# 4. Login screen — slick-greeter (sudo)
+# ------------------------------------------------
+STEP "Login screen (slick-greeter)"
+sudo cp "$REPO/background.jpg" /usr/share/backgrounds/background.jpg && OK "wallpaper -> /usr/share/backgrounds/background.jpg"
+sudo tee /etc/lightdm/slick-greeter.conf >/dev/null <<'EOF'
+[Greeter]
+background=/usr/share/backgrounds/background.jpg
+content-align=center
+draw-user-backgrounds=true
+show-clock=true
+clock-format=%A, %B %d  %I:%M %p
+show-power=true
+show-quit=false
+show-keyboard=false
+show-a11y=false
+show-hostname=false
+EOF
+OK "slick-greeter.conf written (top-right: battery + full date, 12h)"
+
+# ------------------------------------------------
+# 5. System tweaks (sudo)
+# ------------------------------------------------
+run_step "Swappiness 10" bash -c 'echo "vm.swappiness=10" | sudo tee /etc/sysctl.d/99-swappiness.conf >/dev/null && sudo sysctl --system >/dev/null'
+
+run_step "GRUB timeout 5s" bash -c 'sudo sed -i "s/^GRUB_TIMEOUT=.*/GRUB_TIMEOUT=5/" /etc/default/grub && sudo update-grub >/dev/null'
+
+STEP "ext4 reserved blocks 1%"
+ROOT_DEV="$(findmnt -n / -o SOURCE)"
+if lsblk -no FSTYPE "$ROOT_DEV" 2>/dev/null | grep -q ^ext; then
+    if sudo tune2fs -m 1 "$ROOT_DEV" >/dev/null; then OK "reserve set to 1% on $ROOT_DEV"
+    else WARN "tune2fs failed on $ROOT_DEV — skipped"; FAILED_STEPS+=("ext4 reserve"); fi
+else
+    WARN "root ($ROOT_DEV) is not ext4 — skipped"
+fi
+
+# ------------------------------------------------
+# 6. Acer battery health mode (auto-detected)
+# ------------------------------------------------
+VENDOR="$(cat /sys/class/dmi/id/sys_vendor 2>/dev/null || echo unknown)"
+if grep -qi acer <<<"$VENDOR"; then
+    STEP "Acer detected — battery health driver (80% charge limit)"
+    if sudo apt install -y build-essential "linux-headers-$(uname -r)" git \
+       && git clone --depth=1 https://github.com/frederik-h/acer-wmi-battery.git /tmp/acer-wmi-battery \
+       && make -C /tmp/acer-wmi-battery; then
+        KDIR="/lib/modules/$(uname -r)/kernel/drivers/platform/x86"
+        sudo mkdir -p "$KDIR"
+        sudo cp /tmp/acer-wmi-battery/acer-wmi-battery.ko "$KDIR/"
+        sudo depmod -a
+        echo "acer-wmi-battery" | sudo tee /etc/modules-load.d/acer-wmi-battery.conf >/dev/null
+        echo "options acer-wmi-battery enable_health_mode=1" | sudo tee /etc/modprobe.d/acer-wmi-battery.conf >/dev/null
+        sudo modprobe acer-wmi-battery || WARN "modprobe failed — will load after reboot"
+        rm -rf /tmp/acer-wmi-battery
+        OK "battery health mode installed (limit 80%)"
+    else
+        WARN "Acer driver build failed — see mint-setup.md Section 9"; FAILED_STEPS+=("acer battery driver")
+    fi
+else
+    STEP "Vendor: $VENDOR — not an Acer, skipping battery driver"
+fi
+
+# ------------------------------------------------
+# 7. Summary
+# ------------------------------------------------
+echo
+echo "==============================================="
+echo " DONE — summary"
+echo "==============================================="
+echo " applied : dotfiles, themes, icons, fonts, keybinds (Super+B brave, Super+R rofi),"
+echo "           login screen, swappiness, GRUB timeout, ext4 reserve"
+if [ "${#FAILED_STEPS[@]}" -gt 0 ]; then
+    echo " FAILED  : ${FAILED_STEPS[*]}  (re-run script or do manually via mint-setup.md)"
+fi
+echo
+echo " manual leftovers (not apt-installable):"
+command -v brave-browser >/dev/null && echo "   brave-browser : installed" \
+    || echo "   brave-browser : NOT installed (Super+B needs it) — see fresh-install.md"
+command -v zed >/dev/null && echo "   zed           : installed" \
+    || echo "   zed           : NOT installed — see fresh-install.md"
+echo "   GRUB timeout  : applies at next reboot"
+echo
+read -rp "Restart the login screen now? (logs you out!) [y/N] " ans
+[ "${ans:-n}" = y ] && sudo systemctl restart lightdm
+exit 0

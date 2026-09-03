@@ -1,6 +1,6 @@
 # linux-configs
 
-Just a backup of my mint xfce setup incase of any worse cases.
+Just a backup of my mint xfce setup incase of any worse cases. Most are AI generated for easy setup.
 
 ## Contents
 
