@@ -37,7 +37,7 @@ OK "paths rewritten"
 # ------------------------------------------------
 # 2. Packages (sudo)
 # ------------------------------------------------
-run_step "Installing packages" bash -c 'sudo apt update && sudo apt install -y rofi flameshot plank picom neofetch sticky kitty'
+run_step "Installing packages" bash -c 'sudo apt update && sudo apt install -y rofi flameshot plank picom fastfetch sticky kitty'
 
 # Starship prompt (not in apt — official installer, skipped if present)
 STEP "Starship prompt engine"
