@@ -2,7 +2,7 @@
 
 ## 0. Last Synchronized Checkpoint
 
-- **Last AI Analysis Timestamp**: August 17, 2026, 08:11 PM PST
+- **Last AI Analysis Timestamp**: September 03, 2026, 06:32 PM PST
 
 ## 1. Visual Codebase Overview
 
@@ -13,15 +13,40 @@ _Draw the entire project directory tree and explain each folder and file in one 
 ```
 linux-configs/
 ├── AGENTS.md                       _Agent workspace configuration, instruction loading, skill modes_
+├── README.md                       _Project readme_
+├── background.jpg                  _Desktop wallpaper_
+├── fresh-install.md                _Fresh install guide_
+├── mint-setup.md                   _Mint setup guide_
 ├── opencode.json                   _opencode project config_
+├── setup.sh                        _Setup script_
 ├── .config/                        _User app configs (dotfiles)_
-│   ├── neofetch/config.conf        _neofetch system info display config_
+│   ├── autostart/                  _Autostart .desktop entries (Plank, updates, etc.)_
+│   ├── fastfetch/config.jsonc      _Fastfetch system info config_
+│   ├── gtk-3.0/gtk.css             _GTK3 custom CSS overrides_
+│   ├── kitty/                      _Kitty terminal configs_
+│   │   ├── current-theme.conf      _Kitty active color theme_
+│   │   └── kitty.conf              _Kitty terminal settings_
 │   ├── opencode/opencode.jsonc     _opencode global config_
 │   ├── picom/picom.conf            _picom compositor config_
+│   ├── rofi/                       _Rofi application launcher_
+│   │   ├── colors/gruvbox.rasi     _Gruvbox color scheme_
+│   │   ├── config.rasi             _Rofi main config_
+│   │   └── launchers/type-3/       _Launcher theme_
+│   ├── starship.toml               _Starship prompt config_
+│   ├── xfce4/xfconf/               _Xfce4 settings (xfconf XML)_
 │   └── zed/                        _Zed editor configs_
 │       ├── keymap.json             _custom keybindings_
 │       ├── settings.json           _editor settings_
 │       └── themes/                 _custom themes_
+├── .icons/                         _Icon themes_
+│   ├── WhiteSur-grey/              _WhiteSur grey icons + @2x symlinks_
+│   ├── WhiteSur-grey-dark/         _WhiteSur grey-dark variant_
+│   └── WhiteSur-grey-light/        _WhiteSur grey-light variant_
+├── .themes/                        _GTK themes_
+│   ├── Gruvbox-BL-LB-Dark-Soft/    _Gruvbox dark theme (gnome-shell, gtk-2/3/4, xfwm4, plank)_
+│   ├── Gruvbox-BL-LB-Dark-Soft-hdpi/ _Gruvbox dark theme hi-DPI variant_
+│   └── Gruvbox-BL-LB-Dark-Soft-xhdpi/ _Gruvbox dark theme extra-hi-DPI variant_
+├── .local/share/fonts/             _Custom fonts (7 Nerd Font + 2 regular files)_
 └── .opencode/                      _Agent memory, rules, skills_
 ```
 
@@ -30,14 +55,33 @@ linux-configs/
 | Path | What It Does |
 |------|-------------|
 | `AGENTS.md` | _Agent workspace configuration — instruction loading, skill modes, memory locations_ |
+| `README.md` | _Project readme_ |
+| `background.jpg` | _Desktop wallpaper image_ |
+| `fresh-install.md` | _Fresh install guide — setup steps for new machine_ |
+| `mint-setup.md` | _Mint setup guide — detailed Linux Mint configuration steps_ |
 | `opencode.json` | _Project-level opencode configuration_ |
+| `setup.sh` | _Setup script — automates config installation_ |
 | `.config/` | _Home for all user app configs (dotfiles)_ |
-| `.config/neofetch/config.conf` | _Neofetch config — controls what system info shows in terminal_ |
+| `.config/autostart/` | _Autostart .desktop entries — auto-launch apps on login (Plank, updates, etc.)_ |
+| `.config/fastfetch/config.jsonc` | _Fastfetch config — modern neofetch replacement, system info display_ |
+| `.config/gtk-3.0/gtk.css` | _GTK3 custom CSS overrides_ |
+| `.config/kitty/` | _Kitty terminal emulator configs_ |
+| `.config/kitty/current-theme.conf` | _Kitty active color theme_ |
+| `.config/kitty/kitty.conf` | _Kitty terminal settings_ |
 | `.config/opencode/opencode.jsonc` | _Global opencode config for user_ |
 | `.config/picom/picom.conf` | _Picom compositor config — transparency, shadows, animations_ |
+| `.config/rofi/` | _Rofi application launcher configs_ |
+| `.config/rofi/colors/gruvbox.rasi` | _Gruvbox color scheme for rofi_ |
+| `.config/rofi/config.rasi` | _Rofi main configuration_ |
+| `.config/rofi/launchers/type-3/` | _Rofi launcher theme variant_ |
+| `.config/starship.toml` | _Starship cross-shell prompt config_ |
+| `.config/xfce4/xfconf/` | _Xfce4 settings (xfconf XML channel)_ |
 | `.config/zed/keymap.json` | _Custom keybindings for Zed editor_ |
 | `.config/zed/settings.json` | _Zed editor settings — theme, UI preferences_ |
 | `.config/zed/themes/` | _Custom themes for Zed editor_ |
+| `.icons/` | _Icon themes — WhiteSur-grey variants (light, dark, regular)_ |
+| `.themes/` | _GTK themes — Gruvbox-BL-LB-Dark-Soft (regular, hdpi, xhdpi)_ |
+| `.local/share/fonts/` | _Custom fonts — 5 Nerd Font files (Iosevka, JetBrainsMono) + 2 regular (GrapeNuts, Icomoon)_ |
 | `.opencode/` | _Agent memory files, rules, skills — AI workspace state_ |
 
 ---

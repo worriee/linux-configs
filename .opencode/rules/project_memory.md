@@ -2,17 +2,20 @@
 
 ## 0. Last Checkpoint
 
-- **Last Sync**: August 30, 2026, 09:23 PM PST
+- **Last Sync**: September 03, 2026, 06:32 PM PST
 
 ## 1. Recent Changes (Git)
 
 - **Vault Path**: [set after first `-obsidian`]
-- **Last Scan**: August 30, 2026, 09:23 PM PST
+- **Last Scan**: September 03, 2026, 06:32 PM PST
 
 > `-context` scan: `git status` + `git diff` + `git log @{u}..HEAD`. LIFO, newest on top.
 
 | File | Status | Δ Lines | What Changed |
 |---|---|---|---|
+| `.config/fastfetch/` | A | — | fastfetch replaced neofetch — custom Catnap-style config: all rows iconed, aligned, 12h month-word dates, since/age rows; `config.old.jsonc` backup kept (commit `68e7cf44`) |
+| `.config/kitty/kitty.conf` | M | — | cursor_shape=block fixed (commit `68e7cf44`) |
+| repo sync | C | — | rofi configs + fonts, keybinds (Super+B=brave, Super+R=rofi, Super+Return=kitty), mint-setup.md Section 10 Rofi + Section 11 Kitty/Starship, setup.sh + fresh-install.md + README.md, Acer battery Section 9 — all committed; working tree clean |
 | `mint-setup.md` | M | +58 | Section 8 added (Slick-Greeter login screen config: top-right minimal — battery + full date + 12h clock only; show-quit/keyboard/a11y/hostname disabled) |
 | `.opencode/rules/.clinerules` | M | — | Template v5.0 update from upstream |
 | `.opencode/rules/system_instructions.md` | M | — | Template v5.0 update from upstream |
@@ -41,7 +44,7 @@ _New files visual:_
 .themes/Gruvbox-BL-LB-Dark-Soft-xhdpi/xfwm4/
 ```
 
-- **Unpushed**: 0 commits | **Staged**: 0 | **Unstaged**: 1 (mint-setup.md, +58) | **Untracked**: 0
+- **Unpushed**: 0 commits | **Staged**: 0 | **Unstaged**: 1 (project_memory.md) | **Untracked**: 0
 - **Total Δ**: +514 / −17,574 lines (massive theme swap WhiteSur-Dark → Gruvbox)
 
 ---
@@ -80,7 +83,7 @@ _New files visual:_
 
 ## 6. Next Move
 
-1. Commit pending changes (theme swap + mint-setup.md updates)
+1. Pull/push repo to GitHub remote (local commits exist; ensure remote synced)
 2. Future: copy repo configs to new laptop via setup guide
 
 ---
