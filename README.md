@@ -10,9 +10,11 @@ Just a backup of my mint xfce setup incase of any worse cases. Most are AI gener
 | `fresh-install.md`      | Instructions for the one-command fresh install                                                                                 |
 | `mint-setup.md`         | Post-install guide: performance tweaks, storage reclamation, keybinds, cleanup, autostart, panel styling, login screen, Acer battery, Rofi |
 | `background.jpg`        | Login screen wallpaper (used by the slick-greeter config)                                                                      |
-| `.config/`              | Dotfiles for XFCE, rofi, autostart, gtk-3.0, neofetch, picom, opencode, and Zed                                                 |
-| `.config/xfce4/`        | XFCE keyboard shortcut configuration (Super+B Brave, Super+R Rofi, and the rest of Section 4)                                  |
+| `.config/`              | Dotfiles for XFCE, rofi, kitty, autostart, gtk-3.0, neofetch, picom, opencode, Zed, and Starship                               |
+| `.config/xfce4/`        | XFCE keyboard shortcut configuration (Super+B Brave, Super+R Rofi, Super+Return Kitty, and the rest of Section 4)              |
 | `.config/rofi/`         | Rofi Type-3 launcher (Gruvbox palette, WhiteSur icons) + config                                                                |
+| `.config/kitty/`        | Kitty terminal config (JetBrains Mono, picom blur opacity, audio bell muted) + Gruvbox Dark Soft theme                         |
+| `.config/starship.toml` | Starship prompt config (single-line Gruvbox Powerline arrows)                                                                  |
 | `.config/autostart/`    | XFCE autostart entries (plank, picom, blueman, sticky, etc.)                                                                   |
 | `.config/gtk-3.0/`      | GTK 3 panel styling CSS                                                                                                        |
 | `.config/zed/`          | Zed editor settings, keymap, and themes                                                                                        |

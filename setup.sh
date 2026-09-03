@@ -37,7 +37,24 @@ OK "paths rewritten"
 # ------------------------------------------------
 # 2. Packages (sudo)
 # ------------------------------------------------
-run_step "Installing packages" bash -c 'sudo apt update && sudo apt install -y rofi flameshot plank picom neofetch sticky'
+run_step "Installing packages" bash -c 'sudo apt update && sudo apt install -y rofi flameshot plank picom neofetch sticky kitty'
+
+# Starship prompt (not in apt — official installer, skipped if present)
+STEP "Starship prompt engine"
+if command -v starship >/dev/null; then
+    OK "starship already installed"
+else
+    if curl -sS https://starship.rs/install.sh | sh -s -- -y; then OK "starship installed"
+    else WARN "starship install failed — see mint-setup.md Section 11"; FAILED_STEPS+=("starship install"); fi
+fi
+
+# Hook starship into bash (idempotent)
+if ! grep -q 'starship init bash' "$HOME_DIR/.bashrc" 2>/dev/null; then
+    echo 'eval "$(starship init bash)"' >> "$HOME_DIR/.bashrc"
+    OK "starship hook appended to .bashrc"
+else
+    OK "starship hook already in .bashrc"
+fi
 
 # ------------------------------------------------
 # 3. Dotfiles, themes, icons, fonts
@@ -120,8 +137,8 @@ echo
 echo "==============================================="
 echo " DONE — summary"
 echo "==============================================="
-echo " applied : dotfiles, themes, icons, fonts, keybinds (Super+B brave, Super+R rofi),"
-echo "           login screen, swappiness, GRUB timeout, ext4 reserve"
+echo " applied : dotfiles, themes, icons, fonts, keybinds (Super+B brave, Super+R rofi, Super+Return kitty),"
+echo "           kitty + starship prompt, login screen, swappiness, GRUB timeout, ext4 reserve"
 if [ "${#FAILED_STEPS[@]}" -gt 0 ]; then
     echo " FAILED  : ${FAILED_STEPS[*]}  (re-run script or do manually via mint-setup.md)"
 fi

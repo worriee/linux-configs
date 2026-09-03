@@ -1,0 +1,29 @@
+# Define connected Powerline arrow blocks on a single line
+format = """
+[ $username ](bg:#3c3836 fg:#ebdbb2)\
+[](fg:#3c3836 bg:#d79921)\
+[ $directory ](bg:#d79921 fg:#282828)\
+[](fg:#d79921)\
+$character"""
+
+# Prevent Starship from inserting a blank line before the prompt
+add_newline = false
+
+# User badge styled in Gruvbox dark brown with cream text
+[username]
+show_always = true
+style_user = "bg:#3c3836 fg:#ebdbb2"
+style_root = "bg:#cc241d fg:#ebdbb2"
+format = "[$user]($style)"
+
+# Directory badge styled in Gruvbox gold with dark text
+[directory]
+style = "bg:#d79921 fg:#282828"
+format = "[$path]($style)"
+truncation_length = 3
+truncation_symbol = "…/"
+
+# Command status symbol and input cursor spacing
+[character]
+success_symbol = "[ ](fg:#ebdbb2)"
+error_symbol = "[ ✗ ](fg:#cc241d)"

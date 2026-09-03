@@ -599,3 +599,126 @@ xfconf-query -c xfce4-keyboard-shortcuts -p "/commands/custom/<Super>r" -n -t st
 | Layout & Rules  | `~/.config/rofi/launchers/type-3/style-3.rasi`       |
 | Color Scheme    | `~/.config/rofi/launchers/type-3/shared/colors.rasi` |
 | Palette Files   | `~/.config/rofi/colors/`                             |
+
+---
+
+## 11. Kitty Terminal + Starship Powerline Prompt
+
+Installs the Kitty GPU-accelerated terminal and the Starship prompt engine, with JetBrains Mono typography, picom frosted-glass transparency, Gruvbox Dark Soft colors, and a single-line Powerline arrow prompt. `Super+Return` opens Kitty (already in the keybinds file, Section 4).
+
+### 11A. Install Kitty Terminal
+
+```bash
+sudo apt update && sudo apt install -y kitty
+```
+
+* `sudo apt install -y kitty` — installs the Kitty binary, default kittens, and hardware rendering support.
+
+### 11B. Configure Fonts, Padding, Transparency, and Audio Bell
+
+```bash
+mkdir -p ~/.config/kitty
+
+tee ~/.config/kitty/kitty.conf << 'EOF'
+# Font configuration
+font_family      JetBrains Mono
+bold_font        auto
+italic_font      auto
+bold_italic_font auto
+font_size        11.0
+
+# Window padding and visual behavior
+window_padding_width 12
+confirm_os_window_close 0
+
+# Frosted glass transparency for picom
+background_opacity 0.85
+
+# Mute all terminal bell sounds (Ctrl+R, boundary keys, invalid input)
+enable_audio_bell no
+
+# Include the theme file managed by kitty kitten (Gruvbox Dark Soft)
+include current-theme.conf
+EOF
+```
+
+* `window_padding_width 12` — adds an internal 12-pixel margin so text does not stick to the window frame.
+* `confirm_os_window_close 0` — silences the warning prompt when closing Kitty while tasks are active.
+* `background_opacity 0.85` — 85% opacity so `picom` renders background blur.
+* `enable_audio_bell no` — mutes system beeps on `Ctrl+R`, boundary keys, and invalid input. Keep this on its **own line** — if it gets appended after the theme comment marker it silently stops working.
+
+### 11C. Apply the Gruvbox Dark Soft Palette
+
+```bash
+kitty +kitten themes --reload-in=all "Gruvbox Dark Soft"
+```
+
+* `kitty +kitten themes` — Kitty's built-in theme browser/downloader; writes `current-theme.conf`.
+* `--reload-in=all` — all running Kitty instances reload colors immediately.
+
+### 11D. Install the Starship Prompt Engine
+
+```bash
+sudo apt install -y curl
+curl -sS https://starship.rs/install.sh | sh -s -- -y
+```
+
+* `sh -s -- -y` — automated install into `/usr/local/bin/starship`.
+
+### 11E. Hook Starship into Bash
+
+```bash
+echo 'eval "$(starship init bash)"' >> ~/.bashrc
+source ~/.bashrc
+```
+
+* Appends the init hook so Starship renders on every new tab/window.
+
+### 11F. Gruvbox Powerline Arrow Prompt
+
+```bash
+tee ~/.config/starship.toml << 'EOF'
+# Define connected Powerline arrow blocks on a single line
+format = """
+[ $username ](bg:#3c3836 fg:#ebdbb2)\
+[](fg:#3c3836 bg:#d79921)\
+[ $directory ](bg:#d79921 fg:#282828)\
+[](fg:#d79921)\
+$character"""
+
+# Keep prompt compact on one line
+add_newline = false
+
+# User badge styled in Gruvbox dark brown with cream text
+[username]
+show_always = true
+style_user = "bg:#3c3836 fg:#ebdbb2"
+style_root = "bg:#cc241d fg:#ebdbb2"
+format = "[$user]($style)"
+
+# Directory badge styled in Gruvbox gold with dark charcoal text
+[directory]
+style = "bg:#d79921 fg:#282828"
+format = "[$path]($style)"
+truncation_length = 3
+truncation_symbol = "…/"
+
+# Command status symbols
+[character]
+success_symbol = "[ ](fg:#ebdbb2)"
+error_symbol = "[ ✗ ](fg:#cc241d)"
+EOF
+```
+
+* `format` — segment order: username (dark brown) → gold transition arrow → directory (gold) → arrow → prompt symbol.
+* `add_newline = false` — no blank row above the prompt.
+* `truncation_length = 3` — shortens deep paths to keep the prompt compact.
+
+### Configuration File Locations
+
+| Component                   | File Path                                 | Purpose                                             |
+| --------------------------- | ----------------------------------------- | --------------------------------------------------- |
+| Kitty Main Config           | `~/.config/kitty/kitty.conf`              | Fonts, padding, transparency, audio bell settings   |
+| Kitty Active Theme          | `~/.config/kitty/current-theme.conf`      | Gruvbox Dark Soft color hex codes                   |
+| Bash Shell Startup          | `~/.bashrc`                               | Starship shell initialization hook                  |
+| Starship Config             | `~/.config/starship.toml`                 | Powerline arrow symbols, segment colors, truncation |
