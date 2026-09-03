@@ -538,3 +538,64 @@ sudo cp acer-wmi-battery.ko /lib/modules/$(uname -r)/kernel/drivers/platform/x86
 sudo depmod -a
 sudo modprobe acer-wmi-battery
 ```
+
+---
+
+## 10. Rofi Community Theme (Super+R Launcher)
+
+Installs the `adi1090x` rofi community theme suite, configures the **Type-3 launcher** with Gruvbox colors, WhiteSur icons, and `Super+R` as the launch key. On new laptops, restore from repo instead of re-cloning.
+
+### 10A. Fresh Install (From GitHub)
+
+Skip this subsection if restoring from repo (see 10B).
+
+```bash
+sudo apt update && sudo apt install -y git rofi
+
+git clone --depth=1 https://github.com/adi1090x/rofi.git ~/rofi-community-themes
+cd ~/rofi-community-themes && chmod +x setup.sh && ./setup.sh
+
+# Change default style to style-3
+sed -i -E "s/theme=['\"][^'\"]+['\"]/theme='style-3'/" ~/.config/rofi/launchers/type-3/launcher.sh
+
+# Add WhiteSur icons + Super+Q close shortcut
+sed -i '/configuration {/a \    icon-theme:                 "WhiteSur-grey-dark";\n    kb-cancel:                  "Escape,Super+q,Super+Q,Super+r";' ~/.config/rofi/launchers/type-3/style-3.rasi
+
+# Link Gruvbox color palette
+sed -i 's/@import .*/@import "~\/.config\/rofi\/colors\/gruvbox.rasi"/' ~/.config/rofi/launchers/type-3/shared/colors.rasi
+
+# Bind Super+R to the launcher
+xfconf-query -c xfce4-keyboard-shortcuts -p "/commands/custom/<Super>r" -n -t string -s "$HOME/.config/rofi/launchers/type-3/launcher.sh"
+
+# Remove cloned repo after verifying
+rm -rf ~/rofi-community-themes
+```
+
+### 10B. Restore From Repo (New Laptop)
+
+Skip if you did 10A. This copies pre-configured files from the repo into your home directory.
+
+```bash
+REPO=/home/julry/vscodefiles/linux-configs
+
+# Copy launcher (type-3, style-3, Gruvbox palette, WhiteSur icons)
+cp -r "$REPO/.config/rofi/launchers/type-3" ~/.config/rofi/launchers/type-3/
+cp -r "$REPO/.config/rofi/colors/gruvbox.rasi" ~/.config/rofi/colors/
+cp "$REPO/.config/rofi/config.rasi" ~/.config/rofi/
+
+# Install fonts
+cp "$REPO/.local/share/fonts/"*.ttf ~/.local/share/fonts/
+fc-cache -f
+
+# Bind Super+R
+xfconf-query -c xfce4-keyboard-shortcuts -p "/commands/custom/<Super>r" -n -t string -s "$HOME/.config/rofi/launchers/type-3/launcher.sh"
+```
+
+### Configuration File Locations
+
+| Target          | File Path                                            |
+| --------------- | ---------------------------------------------------- |
+| Launcher Script | `~/.config/rofi/launchers/type-3/launcher.sh`        |
+| Layout & Rules  | `~/.config/rofi/launchers/type-3/style-3.rasi`       |
+| Color Scheme    | `~/.config/rofi/launchers/type-3/shared/colors.rasi` |
+| Palette Files   | `~/.config/rofi/colors/`                             |
