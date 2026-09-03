@@ -4,22 +4,36 @@ Just a backup of my mint xfce setup incase of any worse cases. Most are AI gener
 
 ## Contents
 
-| Path                | Description                                                                                                |
-| ------------------- | ---------------------------------------------------------------------------------------------------------- |
-| `mint-setup.md`     | Post-install guide: performance tweaks, storage reclamation, keyboard shortcut restoration, dualboot notes |
-| `.config/`          | Dotfiles for neofetch, picom, opencode, Zed, and XFCE                                                      |
-| `.config/xfce4/`    | XFCE keyboard shortcut configuration (restorable in one command)                                           |
-| `.config/zed/`      | Zed editor settings, keymap, and themes                                                                    |
-| `.config/neofetch/` | Neofetch system info display config                                                                        |
-| `.config/picom/`    | Picom compositor configuration                                                                             |
-| `.config/opencode/` | OpenCode global configuration                                                                              |
-| `opencode.json`     | OpenCode project configuration                                                                             |
-| `AGENTS.md`         | Agent workspace instructions                                                                               |
-| `.opencode/`        | Agent rules, memory, and skills                                                                            |
+| Path                    | Description                                                                                                                    |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| `setup.sh`              | One-command restore script for a fresh Mint XFCE install (see `fresh-install.md`)                                              |
+| `fresh-install.md`      | Instructions for the one-command fresh install                                                                                 |
+| `mint-setup.md`         | Post-install guide: performance tweaks, storage reclamation, keybinds, cleanup, autostart, panel styling, login screen, Acer battery, Rofi |
+| `background.jpg`        | Login screen wallpaper (used by the slick-greeter config)                                                                      |
+| `.config/`              | Dotfiles for XFCE, rofi, autostart, gtk-3.0, neofetch, picom, opencode, and Zed                                                 |
+| `.config/xfce4/`        | XFCE keyboard shortcut configuration (Super+B Brave, Super+R Rofi, and the rest of Section 4)                                  |
+| `.config/rofi/`         | Rofi Type-3 launcher (Gruvbox palette, WhiteSur icons) + config                                                                |
+| `.config/autostart/`    | XFCE autostart entries (plank, picom, blueman, sticky, etc.)                                                                   |
+| `.config/gtk-3.0/`      | GTK 3 panel styling CSS                                                                                                        |
+| `.config/zed/`          | Zed editor settings, keymap, and themes                                                                                        |
+| `.config/neofetch/`     | Neofetch system info display config                                                                                            |
+| `.config/picom/`        | Picom compositor configuration                                                                                                 |
+| `.config/opencode/`     | OpenCode global configuration                                                                                                  |
+| `.themes/`              | Gruvbox XFCE window themes (BL-LB-Dark-Soft + hdpi/xhdpi variants)                                                             |
+| `.icons/`               | WhiteSur-grey icon themes                                                                                                      |
+| `.local/share/fonts/`   | Rofi/Nerd fonts (Iosevka, JetBrains Mono, etc.)                                                                                |
+| `opencode.json`         | OpenCode project configuration                                                                                                 |
+| `AGENTS.md`             | Agent workspace instructions                                                                                                   |
+| `.opencode/`            | Agent rules, memory, and skills                                                                                                |
 
 ## Getting Started on a New Machine
 
-1. Clone this repository.
-2. Follow `mint-setup.md` to apply system optimizations (swappiness, GRUB timeout, reserved disk space).
-3. Restore keyboard shortcuts with the one-command copy step in Section 4.
-4. Optionally copy individual configs from `.config/` to `~/.config/`.
+One command (details in `fresh-install.md`):
+
+```bash
+sudo apt install -y git && git clone --depth=1 https://github.com/worriee/linux-configs.git && cd linux-configs && bash setup.sh
+```
+
+It copies all dotfiles/themes/icons/fonts, applies system tweaks (swappiness, GRUB timeout, ext4 reserve), configures the slick-greeter login screen, and auto-detects Acer laptops for the battery health driver. Manual leftovers (Brave, Zed) are listed in `fresh-install.md`.
+
+Prefer doing it manually? Follow `mint-setup.md` section by section.
