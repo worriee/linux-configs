@@ -37,7 +37,7 @@ OK "paths rewritten"
 # ------------------------------------------------
 # 2. Packages (sudo)
 # ------------------------------------------------
-run_step "Installing packages" bash -c 'sudo apt update && sudo apt install -y rofi flameshot plank picom fastfetch sticky kitty'
+run_step "Installing packages" bash -c 'sudo apt update && sudo apt install -y rofi flameshot plank picom fastfetch sticky kitty zram-tools'
 
 # Starship prompt (not in apt — official installer, skipped if present)
 STEP "Starship prompt engine"
@@ -124,6 +124,18 @@ run_step "Swappiness 10" bash -c 'echo "vm.swappiness=10" | sudo tee /etc/sysctl
 
 run_step "GRUB timeout 5s" bash -c 'sudo sed -i "s/^GRUB_TIMEOUT=.*/GRUB_TIMEOUT=5/" /etc/default/grub && sudo update-grub >/dev/null'
 
+# ZRAM: zstd + 100% RAM (see mint-setup.md Section 13)
+STEP "ZRAM compressed swap (zstd, 100% RAM)"
+if grep -q "^ALGO=zstd" /etc/default/zramswap 2>/dev/null && grep -q "^PERCENT=100" /etc/default/zramswap 2>/dev/null; then
+    OK "zramswap already configured"
+else
+    if printf 'ALGO=zstd\nPERCENT=100\n' | sudo tee /etc/default/zramswap >/dev/null && sudo systemctl restart zramswap >/dev/null 2>&1; then
+        OK "zramswap configured (zstd, 100%)"
+    else
+        WARN "zramswap config failed — see mint-setup.md Section 13"; FAILED_STEPS+=("zram config")
+    fi
+fi
+
 STEP "ext4 reserved blocks 1%"
 ROOT_DEV="$(findmnt -n / -o SOURCE)"
 if lsblk -no FSTYPE "$ROOT_DEV" 2>/dev/null | grep -q ^ext; then
@@ -166,7 +178,7 @@ echo "==============================================="
 echo " DONE — summary"
 echo "==============================================="
 echo " applied : dotfiles, themes, icons, fonts, keybinds (Super+B brave, Super+R rofi, Super+Return kitty, Super+Alt+B dim toggle),"
-echo "           kitty + starship prompt, login screen, swappiness, GRUB timeout, ext4 reserve"
+echo "           kitty + starship prompt, login screen, swappiness, GRUB timeout, ext4 reserve, zram swap (zstd)"
 if [ "${#FAILED_STEPS[@]}" -gt 0 ]; then
     echo " FAILED  : ${FAILED_STEPS[*]}  (re-run script or do manually via mint-setup.md)"
 fi

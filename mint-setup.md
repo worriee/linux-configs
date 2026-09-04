@@ -789,3 +789,68 @@ Press **`Super + Alt + B`**: screen drops to 60% brightness. Press again: back t
 | --------------------------------- | ---------------------------------------------- |
 | `~/.local/bin/toggle-screen-dim.sh` | Toggle logic: state flag + xrandr brightness |
 | `xfce4-keyboard-shortcuts` channel | XFCE hotkey mapping (`Super + Alt + B`)        |
+
+---
+
+## 13. ZRAM Compressed Swap (zstd)
+
+Compressed swap in RAM: a virtual block device (`/dev/zram0`) that holds swapped pages compressed in memory instead of writing them to the SSD. Works together with Section 1 (swappiness 10): Linux first compresses idle pages into fast RAM, and only touches the SSD swapfile after zram fills up.
+
+### Step 1: Install the Management Package
+
+```bash
+sudo apt update && sudo apt install -y zram-tools
+```
+
+* `zram-tools` — background daemon that provisions, initializes, and mounts the compressed RAM block device at boot.
+
+### Step 2: Configure Algorithm and Allocation Size
+
+Edit `/etc/default/zramswap`:
+
+```bash
+sudo nano /etc/default/zramswap
+```
+
+Uncomment and set these two lines:
+
+```text
+ALGO=zstd
+PERCENT=100
+```
+
+* `ALGO=zstd` — Zstandard compression: much tighter ratio (~30–35% of original size) with negligible CPU overhead on modern multi-core processors (replaces legacy `lzo-rle`/`lz4`).
+* `PERCENT=100` — zram capacity = 100% of installed RAM. Dynamic limit: only consumes physical memory as data is actively compressed into it.
+
+### Step 3: Apply the Configuration
+
+```bash
+sudo systemctl restart zramswap
+```
+
+Stops the running instance and re-initializes `/dev/zram0` with the new parameters — no reboot needed.
+
+### Step 4: Verification and Priority Check
+
+```bash
+zramctl
+swapon --show
+```
+
+Expected `zramctl` output:
+
+| Field       | Expected Value                              |
+| ----------- | ------------------------------------------- |
+| `NAME`      | `/dev/zram0`                                |
+| `ALGORITHM` | `zstd`                                      |
+| `DISKSIZE`  | 100% of RAM (e.g. `7G` on an 8GB machine)   |
+| `MOUNTPOINT`| `[SWAP]`                                    |
+
+Expected `swapon --show` priorities:
+
+| Swap Source  | Priority | Role                                        |
+| ------------ | -------- | ------------------------------------------- |
+| `/dev/zram0` | `100`    | High — Linux writes here first              |
+| `/swapfile`  | `-1`     | Low — SSD failsafe only after zram fills    |
+
+**Rule**: Linux writes to the highest priority swap first. This guarantees memory overflow goes into high-speed compressed RAM, with the SSD swapfile as a secondary failsafe.
