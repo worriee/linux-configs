@@ -69,6 +69,34 @@ cp -rb "$REPO/.local/share/fonts/." "$HOME_DIR/.local/share/fonts/"
 fc-cache -f >/dev/null 2>&1
 OK "dotfiles + fonts applied (backups: <file>~)"
 
+# Screen dim toggle script (keybind restores from the xfconf XML above)
+STEP "Screen dim toggle script (Super+Alt+B)"
+if [ -f "$HOME_DIR/.local/bin/toggle-screen-dim.sh" ]; then
+    OK "toggle-screen-dim.sh already exists"
+else
+    mkdir -p "$HOME_DIR/.local/bin"
+    tee "$HOME_DIR/.local/bin/toggle-screen-dim.sh" >/dev/null <<'EOF'
+#!/usr/bin/env bash
+
+# 1. Dynamically grab the first connected display identifier
+DISPLAY_NAME=$(xrandr --current | grep " connected" | awk '{print $1}' | head -n 1)
+
+# 2. File used to track whether dimming is currently active
+STATE_FILE="/tmp/.screen_dim_toggle_state"
+
+# 3. Toggle brightness between 1.0 (default) and 0.6 (ultra-dim)
+if [ -f "$STATE_FILE" ]; then
+    xrandr --output "$DISPLAY_NAME" --brightness 1.0
+    rm -f "$STATE_FILE"
+else
+    xrandr --output "$DISPLAY_NAME" --brightness 0.6
+    touch "$STATE_FILE"
+fi
+EOF
+    chmod +x "$HOME_DIR/.local/bin/toggle-screen-dim.sh"
+    OK "toggle-screen-dim.sh created (mint-setup.md Section 12)"
+fi
+
 # ------------------------------------------------
 # 4. Login screen — slick-greeter (sudo)
 # ------------------------------------------------
@@ -137,7 +165,7 @@ echo
 echo "==============================================="
 echo " DONE — summary"
 echo "==============================================="
-echo " applied : dotfiles, themes, icons, fonts, keybinds (Super+B brave, Super+R rofi, Super+Return kitty),"
+echo " applied : dotfiles, themes, icons, fonts, keybinds (Super+B brave, Super+R rofi, Super+Return kitty, Super+Alt+B dim toggle),"
 echo "           kitty + starship prompt, login screen, swappiness, GRUB timeout, ext4 reserve"
 if [ "${#FAILED_STEPS[@]}" -gt 0 ]; then
     echo " FAILED  : ${FAILED_STEPS[*]}  (re-run script or do manually via mint-setup.md)"

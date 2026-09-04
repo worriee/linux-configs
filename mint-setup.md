@@ -722,3 +722,70 @@ EOF
 | Kitty Active Theme          | `~/.config/kitty/current-theme.conf`      | Gruvbox Dark Soft color hex codes                   |
 | Bash Shell Startup          | `~/.bashrc`                               | Starship shell initialization hook                  |
 | Starship Config             | `~/.config/starship.toml`                 | Powerline arrow symbols, segment colors, truncation |
+
+---
+
+## 12. X11 Software Screen Dim Toggle (Super+Alt+B)
+
+Software brightness toggle for X11: dims the display to 60% and back with one hotkey. Works independently of hardware backlight — useful on laptops where minimum brightness is still too bright. The display name is detected dynamically (`eDP`, `eDP-1`, `LVDS-1`, ...), so it works across laptop models.
+
+### Create the Toggle Script
+
+```bash
+mkdir -p ~/.local/bin
+
+tee ~/.local/bin/toggle-screen-dim.sh << 'EOF'
+#!/usr/bin/env bash
+
+# 1. Dynamically grab the first connected display identifier
+DISPLAY_NAME=$(xrandr --current | grep " connected" | awk '{print $1}' | head -n 1)
+
+# 2. File used to track whether dimming is currently active
+STATE_FILE="/tmp/.screen_dim_toggle_state"
+
+# 3. Toggle brightness between 1.0 (default) and 0.6 (ultra-dim)
+if [ -f "$STATE_FILE" ]; then
+    xrandr --output "$DISPLAY_NAME" --brightness 1.0
+    rm -f "$STATE_FILE"
+else
+    xrandr --output "$DISPLAY_NAME" --brightness 0.6
+    touch "$STATE_FILE"
+fi
+EOF
+
+chmod +x ~/.local/bin/toggle-screen-dim.sh
+```
+
+* `DISPLAY_NAME=$(xrandr ...)` — queries X11 for the first connected screen; no hardcoded `eDP-1`.
+* `STATE_FILE=/tmp/.screen_dim_toggle_state` — flag file in RAM; its presence means "currently dimmed".
+* `chmod +x` — makes the script executable so the shortcut daemon can run it directly.
+
+### Map the Global Shortcut
+
+```bash
+xfconf-query -c xfce4-keyboard-shortcuts -p "/commands/custom/<Super><Alt>b" -n -t string -s "$HOME/.local/bin/toggle-screen-dim.sh"
+```
+
+* `-p "/commands/custom/<Super><Alt>b"` — the `Super + Alt + B` combination.
+* `-n -t string -s "..."` — creates the property pointing at the script.
+
+This keybind is also captured in `.config/xfce4/xfconf/xfce-perchannel-xml/xfce4-keyboard-shortcuts.xml`, so `setup.sh` restores it automatically.
+
+### Test
+
+Press **`Super + Alt + B`**: screen drops to 60% brightness. Press again: back to 100%.
+
+### Tuning Reference
+
+| Setting          | Location in Script                                | Default | Notes                                            |
+| ---------------- | ------------------------------------------------- | ------- | ------------------------------------------------ |
+| Dim level        | `xrandr --output "$DISPLAY_NAME" --brightness 0.6` | `0.6`   | `0.4` = very dark, `0.75` = mild dim             |
+| Reset level      | `xrandr --output "$DISPLAY_NAME" --brightness 1.0` | `1.0`   | Default color curve                              |
+| Notifications    | Add after `rm`/`touch` lines                      | none    | e.g. `notify-send "Screen Dimmer" "Dimmed (60%)"` |
+
+### Summary of Created Files
+
+| Path                              | Purpose                                        |
+| --------------------------------- | ---------------------------------------------- |
+| `~/.local/bin/toggle-screen-dim.sh` | Toggle logic: state flag + xrandr brightness |
+| `xfce4-keyboard-shortcuts` channel | XFCE hotkey mapping (`Super + Alt + B`)        |

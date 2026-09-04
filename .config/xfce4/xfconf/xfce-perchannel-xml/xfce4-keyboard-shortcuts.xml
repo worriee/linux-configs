@@ -43,6 +43,7 @@
       <property name="&lt;Super&gt;r" type="string" value="/home/julry/.config/rofi/launchers/type-3/launcher.sh"/>
       <property name="&lt;Super&gt;b" type="string" value="brave-browser"/>
       <property name="&lt;Super&gt;Return" type="string" value="kitty"/>
+      <property name="&lt;Super&gt;&lt;Alt&gt;b" type="string" value="/home/julry/.local/bin/toggle-screen-dim.sh"/>
     </property>
   </property>
   <property name="xfwm4" type="empty">
