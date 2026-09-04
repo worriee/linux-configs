@@ -120,7 +120,7 @@ OK "slick-greeter.conf written (top-right: battery + full date, 12h)"
 # ------------------------------------------------
 # 5. System tweaks (sudo)
 # ------------------------------------------------
-run_step "Swappiness 100 (zram)" bash -c 'echo "vm.swappiness=100" | sudo tee /etc/sysctl.d/99-swappiness.conf >/dev/null && sudo sysctl --system >/dev/null'
+run_step "Swappiness 180 (zram)" bash -c 'echo "vm.swappiness=180" | sudo tee /etc/sysctl.d/99-swappiness.conf >/dev/null && sudo sysctl --system >/dev/null'
 
 run_step "GRUB timeout 5s" bash -c 'sudo sed -i "s/^GRUB_TIMEOUT=.*/GRUB_TIMEOUT=5/" /etc/default/grub && sudo update-grub >/dev/null'
 

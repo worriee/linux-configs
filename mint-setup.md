@@ -6,14 +6,14 @@ Run in this order after a fresh install.
 
 ---
 
-## 1. Swappiness (60 → 100 with ZRAM)
+## 1. Swappiness (60 → 180 with ZRAM)
 
 ### What This Does
 
 Swappiness controls how aggressively Linux moves idle RAM pages into swap instead of keeping them in physical memory.
 
 - **Default (60):** moderate balance, tuned for slow disk swap.
-- **With ZRAM (100):** the kernel swaps idle pages aggressively into fast compressed RAM (see Section 13), freeing real RAM for apps and file cache. The SSD swapfile is only touched after zram fills up — so SSD wear goes *down*, not up.
+- **With ZRAM (180):** the kernel swaps idle pages aggressively into fast compressed RAM (see Section 13), freeing real RAM for apps and file cache. The SSD swapfile is only touched after zram fills up — so SSD wear goes *down*, not up.
 
 > Requires Section 13 (ZRAM) to be set up first. Without zram, keep this low (10) to protect the SSD.
 
@@ -29,7 +29,7 @@ sudo nano /etc/sysctl.conf
 
 ```text
 # Prefer fast compressed RAM swap (zram) over SSD swapfile
-vm.swappiness=100
+vm.swappiness=180
 ```
 
 3. Press `Ctrl + O`, then `Enter` to save, and `Ctrl + X` to exit.
@@ -45,7 +45,7 @@ sudo sysctl -p
 cat /proc/sys/vm/swappiness
 ```
 
-_(Expected output: `100`)_
+_(Expected output: `180`)_
 
 ---
 
@@ -122,7 +122,7 @@ df -h /
 
 | Optimization            | Default | New Value | Benefit                                                    |
 | ----------------------- | ------- | --------- | ---------------------------------------------------------- |
-| **vm.swappiness**       | `60`    | `100`     | Leans on fast compressed RAM (zram) first; SSD swapfile only as failsafe. |
+| **vm.swappiness**       | `60`    | `180`     | Leans on fast compressed RAM (zram) first; SSD swapfile only as failsafe. |
 | **GRUB_TIMEOUT**        | `10s`   | `5s`      | Shaves 5 seconds off system startup time.                  |
 | **ext4 Reserved Space** | `5%`    | `1%`      | Reclaims ~20GB of SSD storage while maintaining stability. |
 
@@ -796,7 +796,7 @@ Press **`Super + Alt + B`**: screen drops to 60% brightness. Press again: back t
 
 ## 13. ZRAM Compressed Swap (zstd)
 
-Compressed swap in RAM: a virtual block device (`/dev/zram0`) that holds swapped pages compressed in memory instead of writing them to the SSD. Works together with Section 1 (swappiness 100): Linux first compresses idle pages into fast RAM, and only touches the SSD swapfile after zram fills up.
+Compressed swap in RAM: a virtual block device (`/dev/zram0`) that holds swapped pages compressed in memory instead of writing them to the SSD. Works together with Section 1 (swappiness 180): Linux first compresses idle pages into fast RAM, and only touches the SSD swapfile after zram fills up.
 
 ### Step 1: Install the Management Package
 
