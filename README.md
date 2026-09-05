@@ -15,7 +15,7 @@ Just a backup of my mint xfce setup incase of any worse cases. Most are AI gener
 | `.config/rofi/`         | Rofi Type-3 launcher (Gruvbox palette, WhiteSur icons) + config                                                                            |
 | `.config/kitty/`        | Kitty terminal config (JetBrains Mono, picom blur opacity, audio bell muted) + Gruvbox Dark Soft theme                                     |
 | `.config/starship.toml` | Starship prompt config (single-line Gruvbox Powerline arrows)                                                                              |
-| `.config/autostart/`    | XFCE autostart entries (plank, picom, blueman, sticky, etc.)                                                                               |
+| `.config/autostart/`    | XFCE autostart entries (picom, blueman, sticky, etc.)                                                                                     |
 | `.config/gtk-3.0/`      | GTK 3 panel styling CSS                                                                                                                    |
 | `.config/zed/`          | Zed editor settings, keymap, and themes                                                                                                    |
 | `.config/fastfetch/`    | Fastfetch dotfiles layout                                                                                                                  |

@@ -8,7 +8,7 @@
 // command palette (cmd-shift-p / ctrl-shift-p)
 {
   "base_keymap": "VSCode",
-  "line_ending": "enforce_crlf",
+  "line_ending": "detect",
   "format_on_save": "on",
   "cli_default_open_behavior": "existing_window",
   "ensure_final_newline_on_save": true,

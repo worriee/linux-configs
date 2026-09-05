@@ -27,17 +27,5 @@
   "plugin": [
     "opencode-caveman",
     "opencode-ponytail"
-  ],
-  "mcp": {
-    "obsidian": {
-      "type": "local",
-      "command": [
-        "npx",
-        "-y",
-        "@modelcontextprotocol/server-filesystem",
-        "/home/julry/Documents/Personal_Notes/Memory"
-      ],
-      "enabled": true
-    }
-  }
+  ]
 }

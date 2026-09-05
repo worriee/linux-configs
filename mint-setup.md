@@ -13,7 +13,7 @@ Run in this order after a fresh install.
 Swappiness controls how aggressively Linux moves idle RAM pages into swap instead of keeping them in physical memory.
 
 - **Default (60):** moderate balance, tuned for slow disk swap.
-- **With ZRAM (180):** the kernel swaps idle pages aggressively into fast compressed RAM (see Section 13), freeing real RAM for apps and file cache. The SSD swapfile is only touched after zram fills up — so SSD wear goes *down*, not up.
+- **With ZRAM (180):** the kernel swaps idle pages aggressively into fast compressed RAM (see Section 13), freeing real RAM for apps and file cache. The SSD swapfile is only touched after zram fills up — so SSD wear goes _down_, not up.
 - **page-cluster (0):** controls swap readahead (pages fetched per I/O = 2^n). With zram, swap I/O is random compressed-RAM access — multi-page readahead just amplifies CPU work decompressing unused pages. `0` = one page per I/O, precise, no overfetch. Default on this kernel is already 0; setting it explicitly keeps the pairing documented.
 
 > Requires Section 13 (ZRAM) to be set up first. Without zram, keep this low (10) to protect the SSD.
@@ -123,12 +123,12 @@ df -h /
 
 ## Quick Reference Summary Table
 
-| Optimization            | Default | New Value | Benefit                                                    |
-| ----------------------- | ------- | --------- | ---------------------------------------------------------- |
+| Optimization            | Default | New Value | Benefit                                                                   |
+| ----------------------- | ------- | --------- | ------------------------------------------------------------------------- |
 | **vm.swappiness**       | `60`    | `180`     | Leans on fast compressed RAM (zram) first; SSD swapfile only as failsafe. |
-| **vm.page-cluster**     | `0`     | `0`       | Disables swap readahead — one page per I/O, no zram CPU waste.          |
-| **GRUB_TIMEOUT**        | `10s`   | `5s`      | Shaves 5 seconds off system startup time.                  |
-| **ext4 Reserved Space** | `5%`    | `1%`      | Reclaims ~20GB of SSD storage while maintaining stability. |
+| **vm.page-cluster**     | `0`     | `0`       | Disables swap readahead — one page per I/O, no zram CPU waste.            |
+| **GRUB_TIMEOUT**        | `10s`   | `5s`      | Shaves 5 seconds off system startup time.                                 |
+| **ext4 Reserved Space** | `5%`    | `1%`      | Reclaims ~20GB of SSD storage while maintaining stability.                |
 
 ---
 
@@ -140,10 +140,10 @@ Custom shortcuts captured from current Mint XFCE setup (stored in `~/.config/xfc
 
 | Shortcut             | Action                                           |
 | -------------------- | ------------------------------------------------ |
-| `Super + Return`     | Open terminal (`x-terminal-emulator`)            |
+| `Super + Return`     | Open Kitty terminal (`kitty`)                       |
 | `Super + e`          | Open Thunar file manager                         |
 | `Super + z`          | Open Zed editor                                  |
-| `Super + b`          | Open Microsoft Edge                              |
+| `Super + b`          | Open Brave                                       |
 | `Super + Esc`        | Popup Whisker menu                               |
 | `Alt + F3`           | Appfinder (launcher)                             |
 | `Ctrl + Shift + Esc` | Task manager                                     |
@@ -154,11 +154,11 @@ Custom shortcuts captured from current Mint XFCE setup (stored in `~/.config/xfc
 
 | Shortcut                           | Action                                     |
 | ---------------------------------- | ------------------------------------------ |
-| `Super + 1..5`                     | Switch to workspace 1–5                    |
+| `Super + 1..4`                     | Switch to workspace 1–4                    |
 | `Ctrl + Alt + 1..5`                | Move window to workspace 1–5               |
 | `Alt + Tab` / `Alt + Shift + Tab`  | Cycle windows forward / reverse            |
 | `Super + Tab`                      | Switch windows                             |
-| `Super + w`                        | Close window                               |
+| `Super + q`                        | Close window                               |
 | `Super + f`                        | Maximize window                            |
 | `Ctrl + Super + f`                 | Hide window                                |
 | `Alt + F11`                        | Toggle fullscreen                          |
@@ -167,7 +167,6 @@ Custom shortcuts captured from current Mint XFCE setup (stored in `~/.config/xfc
 | `Alt + F7` / `Alt + F8`            | Move / resize window                       |
 | `Alt + space`                      | Window menu                                |
 | `Ctrl + Alt + d`                   | Show desktop                               |
-| `Left` / `Right` / `Up` / `Down`   | Move between workspaces                    |
 | `Super + KP_Left/Right/Up/Down`    | Tile window to left/right/top/bottom half  |
 | `Super + KP_Home/End/Page_Up/Next` | Tile window to corners (quadrants)         |
 | `Primary + Shift + Alt + Arrows`   | Move window to workspace in that direction |
@@ -207,7 +206,24 @@ sudo systemctl restart lightdm
 
 **Warning: Save your work first.** Restarting LightDM terminates your current session, so unsaved work in editors or browsers will be lost.
 
-### 5B. Restart Only the XFCE Desktop & Panel (Keeps Apps Open)
+### 5B. Flush the Compressed ZRAM Pool & Restart the Desktop Session (Combined)
+
+Flushes the compressed ZRAM pool and immediately restarts the desktop session. Restarts the zram daemon first, then lightdm so zram swap and the swapfile re-initialize cleanly — a plain `systemctl restart zramswap` alone would leave swap disabled.
+
+```bash
+(sudo systemctl restart zramswap 2>/dev/null || sudo systemctl restart zram-config) && sudo systemctl restart lightdm
+```
+
+Shortcut alias — one word: `fresh` (auto-installed by `setup.sh`):
+
+```bash
+alias fresh='(sudo systemctl restart zramswap 2>/dev/null || sudo systemctl restart zram-config) && sudo systemctl restart lightdm'
+```
+
+- `zramswap` restarts the ZRAM daemon (fallback unit name `zram-config` on older/other distros), then `lightdm` restarts the whole desktop session.
+- **Warning: Save your work first.** LightDM kills the session.
+
+### 5C. Restart Only the XFCE Desktop & Panel (Keeps Apps Open)
 
 Reloads the interface without losing open browser tabs or terminal windows. Fixes frozen panel, glitchy UI, or stale theme.
 
@@ -218,7 +234,7 @@ xfce4-panel -r && xfwm4 --replace &
 - `xfce4-panel -r` reloads the taskbar, tray icons, and widgets.
 - `xfwm4 --replace` restarts the window manager to fix stutters, borders, or compositor lag.
 
-### 5C. Clear RAM & Buffer Cache (Memory Refresh)
+### 5D. Clear RAM & Buffer Cache (Memory Refresh)
 
 Gets a fresh-boot-like memory state after closing heavy applications.
 
@@ -228,7 +244,7 @@ sudo sync && echo 3 | sudo tee /proc/sys/vm/drop_caches
 
 Writes pending data to disk (`sync`), then flushes pagecache, dentries, and inodes to free memory immediately.
 
-### 5D. Restart the Network Stack (Wi-Fi & Bluetooth)
+### 5E. Restart the Network Stack (Wi-Fi & Bluetooth)
 
 Fixes Wi-Fi or Bluetooth that stopped responding, without rebooting.
 
@@ -236,7 +252,7 @@ Fixes Wi-Fi or Bluetooth that stopped responding, without rebooting.
 sudo systemctl restart NetworkManager
 ```
 
-### 5E. Remove Unused Packages & Their Config Files (One Command)
+### 5F. Remove Unused Packages & Their Config Files (One Command)
 
 Removes orphaned dependencies, packages with leftover config files (`rc` status), clears the apt cache, and drops unused Flatpak runtimes:
 
@@ -262,15 +278,12 @@ Location in system: **Settings** → **Session and Startup** → **Application A
 - [x] **im-launch**
 - [x] **NetworkManager Applet** _(Manage your network connections)_
 - [x] **picom** _(An X compositor)_
-- [x] **Plank**
 - [x] **PolicyKit Authentication Agent** _(PolicyKit Authentication Agent)_
 - [x] **Power Manager** _(Power management for the Xfce desktop)_
 - [x] **PulseAudio Sound System** _(Start the PulseAudio Sound System)_
 - [x] **Screen Locker** _(Launch screen locker program)_
-- [x] **Update Manager** _(Linux Mint Update Manager)_
 - [x] **User folders update** _(Update common folders names to match current locale)_
 - [x] **User folders update**
-- [x] **Warpinator** _(Transfer files from one computer to another on the local network)_
 - [x] **xapp-sn-watcher** _(A service that provides the org.kde.StatusNotifierWatcher interface for XApps)_
 - [x] **Xfce Notification Daemon**
 - [x] **Xfce Settings Daemon** _(The Xfce Settings Daemon)_
@@ -286,6 +299,8 @@ Location in system: **Settings** → **Session and Startup** → **Application A
 - [ ] **Sticky Notes** _(Create and manage sticky notes on your desktop)_
 - [ ] **Support for NVIDIA Prime** _(Shows a tray icon when a compatible NVIDIA Optimus graphics card is detected)_
 - [ ] **System Reports** _(Troubleshoot problems)_
+- [ ] **Update Manager** _(Linux Mint Update Manager)_
+- [ ] **Warpinator** _(Transfer files from one computer to another on the local network)_
 - [ ] **xiccd** _(Applies color management profiles to your session)_
 - [ ] **Certificate and Key Storage** _(GNOME Keyring: PKCS#11 Component)_
 - [ ] **gnome-disk-utility notification plugin for GNOME Settings Daemon**
@@ -296,31 +311,28 @@ Location in system: **Settings** → **Session and Startup** → **Application A
 
 ### Commands for Checked Autostart Apps
 
-The command each checked app actually runs at login (captured from `/etc/xdg/autostart/` and `~/.config/autostart/`). Verified on this system: `picom` and `plank` both resolve to `/usr/bin/picom` and `/usr/bin/plank`.
+The command each checked app actually runs at login (captured from `/etc/xdg/autostart/` and `~/.config/autostart/`). Verified on this system: `picom` resolves to `/usr/bin/picom`.
 
 | App                            | Command                                                                                                                            |
 | ------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------- |
 | im-launch                      | `sh -c 'IM_CONFIG_CHECK_ENV=1 im-launch true'`                                                                                     |
 | NetworkManager Applet          | `nm-applet`                                                                                                                        |
 | picom                          | `picom`                                                                                                                            |
-| Plank                          | `plank`                                                                                                                            |
 | PolicyKit Authentication Agent | `/usr/lib/policykit-1-gnome/polkit-gnome-authentication-agent-1`                                                                   |
 | Power Manager                  | `xfce4-power-manager`                                                                                                              |
 | PulseAudio Sound System        | `start-pulseaudio-x11`                                                                                                             |
 | Screen Locker                  | `light-locker`                                                                                                                     |
-| Update Manager                 | `mintupdate-launcher`                                                                                                              |
 | User folders update            | `xdg-user-dirs-gtk-update`                                                                                                         |
 | User folders update (2nd)      | `xdg-user-dirs-update`                                                                                                             |
-| Warpinator                     | `warpinator --autostart`                                                                                                           |
 | xapp-sn-watcher                | `/usr/lib/x86_64-linux-gnu/xapps/xapp-sn-watcher`                                                                                  |
 | Xfce Notification Daemon       | `sh -c "systemctl --user start xfce4-notifyd.service 2>/dev/null \|\| exec /usr/lib/x86_64-linux-gnu/xfce4/notifyd/xfce4-notifyd"` |
 | Xfce Settings Daemon           | `xfsettingsd`                                                                                                                      |
 
 ### How to Restore on New Laptop
 
-All checked apps above are **system defaults** — on a fresh Mint XFCE install they are active automatically, so no action is needed for them. Only **Plank** is a user-added autostart entry.
+All checked apps above are **system defaults** — on a fresh Mint XFCE install they are active automatically, so no action is needed for them.
 
-1. Copy the saved autostart files from this repo into place (restores the disabled state + enables Plank):
+1. Copy the saved autostart files from this repo into place (restores the disabled state):
 
 ```bash
 mkdir -p ~/.config/autostart
@@ -461,6 +473,8 @@ _(This logs you out — save your work first.)_
 
 Replicates the **80% Battery Charge Limit** from Acer Care Center on Windows using the open-source `acer-wmi-battery` driver. **Skip this section entirely on non-Acer laptops** — the WMI interface does not exist on other brands.
 
+> **Current state (this machine):** driver is installed and loading at boot, but the charge limit is currently **off (`health_mode` = 0, full 100%)** by choice. To re-enable the 80% limit, run the `batt80` alias (see Manual Control below).
+
 > Source: https://github.com/frederik-h/acer-wmi-battery
 
 ### Prerequisites
@@ -530,7 +544,7 @@ alias battstat='cat /sys/bus/wmi/drivers/acer-wmi-battery/health_mode'
 
 - `batt80` — cap charging at 80%.
 - `batt100` — allow full 100% charge.
-- `battstatus` — show current mode (`1` or `0`).
+- `battstat` — show current mode (`1` or `0`).
 
 ### Kernel Update Maintenance
 
@@ -618,7 +632,7 @@ Installs the Kitty GPU-accelerated terminal and the Starship prompt engine, with
 sudo apt update && sudo apt install -y kitty
 ```
 
-* `sudo apt install -y kitty` — installs the Kitty binary, default kittens, and hardware rendering support.
+- `sudo apt install -y kitty` — installs the Kitty binary, default kittens, and hardware rendering support.
 
 ### 11B. Configure Fonts, Padding, Transparency, and Audio Bell
 
@@ -637,6 +651,9 @@ font_size        11.0
 window_padding_width 12
 confirm_os_window_close 0
 
+# Solid block cursor (thick rectangle, hollow when unfocused)
+cursor_shape block
+
 # Frosted glass transparency for picom
 background_opacity 0.85
 
@@ -645,13 +662,23 @@ enable_audio_bell no
 
 # Include the theme file managed by kitty kitten (Gruvbox Dark Soft)
 include current-theme.conf
+
+# Prevent Kitty from remembering the last maximized window state
+remember_window_size  no
+
+# Set default floating window dimensions (width x height in pixels)
+initial_window_width  900
+initial_window_height 800
 EOF
 ```
 
-* `window_padding_width 12` — adds an internal 12-pixel margin so text does not stick to the window frame.
-* `confirm_os_window_close 0` — silences the warning prompt when closing Kitty while tasks are active.
-* `background_opacity 0.85` — 85% opacity so `picom` renders background blur.
-* `enable_audio_bell no` — mutes system beeps on `Ctrl+R`, boundary keys, and invalid input. Keep this on its **own line** — if it gets appended after the theme comment marker it silently stops working.
+- `window_padding_width 12` — adds an internal 12-pixel margin so text does not stick to the window frame.
+- `confirm_os_window_close 0` — silences the warning prompt when closing Kitty while tasks are active.
+- `cursor_shape block` — solid block cursor while focused (hollow when unfocused).
+- `background_opacity 0.85` — 85% opacity so `picom` renders background blur.
+- `enable_audio_bell no` — mutes system beeps on `Ctrl+R`, boundary keys, and invalid input. Keep this on its **own line** — if it gets appended after the theme comment marker it silently stops working.
+- `remember_window_size  no` — stops Kitty from restoring the last maximized/terminal geometry; always uses the defaults below.
+- `initial_window_width 900` / `initial_window_height 800` — default first-window size in pixels.
 
 ### 11C. Apply the Gruvbox Dark Soft Palette
 
@@ -659,8 +686,8 @@ EOF
 kitty +kitten themes --reload-in=all "Gruvbox Dark Soft"
 ```
 
-* `kitty +kitten themes` — Kitty's built-in theme browser/downloader; writes `current-theme.conf`.
-* `--reload-in=all` — all running Kitty instances reload colors immediately.
+- `kitty +kitten themes` — Kitty's built-in theme browser/downloader; writes `current-theme.conf`.
+- `--reload-in=all` — all running Kitty instances reload colors immediately.
 
 ### 11D. Install the Starship Prompt Engine
 
@@ -669,7 +696,7 @@ sudo apt install -y curl
 curl -sS https://starship.rs/install.sh | sh -s -- -y
 ```
 
-* `sh -s -- -y` — automated install into `/usr/local/bin/starship`.
+- `sh -s -- -y` — automated install into `/usr/local/bin/starship`.
 
 ### 11E. Hook Starship into Bash
 
@@ -678,7 +705,7 @@ echo 'eval "$(starship init bash)"' >> ~/.bashrc
 source ~/.bashrc
 ```
 
-* Appends the init hook so Starship renders on every new tab/window.
+- Appends the init hook so Starship renders on every new tab/window.
 
 ### 11F. Gruvbox Powerline Arrow Prompt
 
@@ -716,18 +743,18 @@ error_symbol = "[ ✗ ](fg:#cc241d)"
 EOF
 ```
 
-* `format` — segment order: username (dark brown) → gold transition arrow → directory (gold) → arrow → prompt symbol.
-* `add_newline = false` — no blank row above the prompt.
-* `truncation_length = 3` — shortens deep paths to keep the prompt compact.
+- `format` — segment order: username (dark brown) → gold transition arrow → directory (gold) → arrow → prompt symbol.
+- `add_newline = false` — no blank row above the prompt.
+- `truncation_length = 3` — shortens deep paths to keep the prompt compact.
 
 ### Configuration File Locations
 
-| Component                   | File Path                                 | Purpose                                             |
-| --------------------------- | ----------------------------------------- | --------------------------------------------------- |
-| Kitty Main Config           | `~/.config/kitty/kitty.conf`              | Fonts, padding, transparency, audio bell settings   |
-| Kitty Active Theme          | `~/.config/kitty/current-theme.conf`      | Gruvbox Dark Soft color hex codes                   |
-| Bash Shell Startup          | `~/.bashrc`                               | Starship shell initialization hook                  |
-| Starship Config             | `~/.config/starship.toml`                 | Powerline arrow symbols, segment colors, truncation |
+| Component          | File Path                            | Purpose                                             |
+| ------------------ | ------------------------------------ | --------------------------------------------------- |
+| Kitty Main Config  | `~/.config/kitty/kitty.conf`         | Fonts, padding, transparency, audio bell settings   |
+| Kitty Active Theme | `~/.config/kitty/current-theme.conf` | Gruvbox Dark Soft color hex codes                   |
+| Bash Shell Startup | `~/.bashrc`                          | Starship shell initialization hook                  |
+| Starship Config    | `~/.config/starship.toml`            | Powerline arrow symbols, segment colors, truncation |
 
 ---
 
@@ -762,9 +789,9 @@ EOF
 chmod +x ~/.local/bin/toggle-screen-dim.sh
 ```
 
-* `DISPLAY_NAME=$(xrandr ...)` — queries X11 for the first connected screen; no hardcoded `eDP-1`.
-* `STATE_FILE=/tmp/.screen_dim_toggle_state` — flag file in RAM; its presence means "currently dimmed".
-* `chmod +x` — makes the script executable so the shortcut daemon can run it directly.
+- `DISPLAY_NAME=$(xrandr ...)` — queries X11 for the first connected screen; no hardcoded `eDP-1`.
+- `STATE_FILE=/tmp/.screen_dim_toggle_state` — flag file in RAM; its presence means "currently dimmed".
+- `chmod +x` — makes the script executable so the shortcut daemon can run it directly.
 
 ### Map the Global Shortcut
 
@@ -772,8 +799,8 @@ chmod +x ~/.local/bin/toggle-screen-dim.sh
 xfconf-query -c xfce4-keyboard-shortcuts -p "/commands/custom/<Super><Alt>b" -n -t string -s "$HOME/.local/bin/toggle-screen-dim.sh"
 ```
 
-* `-p "/commands/custom/<Super><Alt>b"` — the `Super + Alt + B` combination.
-* `-n -t string -s "..."` — creates the property pointing at the script.
+- `-p "/commands/custom/<Super><Alt>b"` — the `Super + Alt + B` combination.
+- `-n -t string -s "..."` — creates the property pointing at the script.
 
 This keybind is also captured in `.config/xfce4/xfconf/xfce-perchannel-xml/xfce4-keyboard-shortcuts.xml`, so `setup.sh` restores it automatically.
 
@@ -783,18 +810,18 @@ Press **`Super + Alt + B`**: screen drops to 60% brightness. Press again: back t
 
 ### Tuning Reference
 
-| Setting          | Location in Script                                | Default | Notes                                            |
-| ---------------- | ------------------------------------------------- | ------- | ------------------------------------------------ |
-| Dim level        | `xrandr --output "$DISPLAY_NAME" --brightness 0.6` | `0.6`   | `0.4` = very dark, `0.75` = mild dim             |
-| Reset level      | `xrandr --output "$DISPLAY_NAME" --brightness 1.0` | `1.0`   | Default color curve                              |
-| Notifications    | Add after `rm`/`touch` lines                      | none    | e.g. `notify-send "Screen Dimmer" "Dimmed (60%)"` |
+| Setting       | Location in Script                                 | Default | Notes                                             |
+| ------------- | -------------------------------------------------- | ------- | ------------------------------------------------- |
+| Dim level     | `xrandr --output "$DISPLAY_NAME" --brightness 0.6` | `0.6`   | `0.4` = very dark, `0.75` = mild dim              |
+| Reset level   | `xrandr --output "$DISPLAY_NAME" --brightness 1.0` | `1.0`   | Default color curve                               |
+| Notifications | Add after `rm`/`touch` lines                       | none    | e.g. `notify-send "Screen Dimmer" "Dimmed (60%)"` |
 
 ### Summary of Created Files
 
-| Path                              | Purpose                                        |
-| --------------------------------- | ---------------------------------------------- |
+| Path                                | Purpose                                      |
+| ----------------------------------- | -------------------------------------------- |
 | `~/.local/bin/toggle-screen-dim.sh` | Toggle logic: state flag + xrandr brightness |
-| `xfce4-keyboard-shortcuts` channel | XFCE hotkey mapping (`Super + Alt + B`)        |
+| `xfce4-keyboard-shortcuts` channel  | XFCE hotkey mapping (`Super + Alt + B`)      |
 
 ---
 
@@ -808,7 +835,7 @@ Compressed swap in RAM: a virtual block device (`/dev/zram0`) that holds swapped
 sudo apt update && sudo apt install -y zram-tools
 ```
 
-* `zram-tools` — background daemon that provisions, initializes, and mounts the compressed RAM block device at boot.
+- `zram-tools` — background daemon that provisions, initializes, and mounts the compressed RAM block device at boot.
 
 ### Step 2: Configure Algorithm and Allocation Size
 
@@ -825,8 +852,8 @@ ALGO=zstd
 PERCENT=100
 ```
 
-* `ALGO=zstd` — Zstandard compression: much tighter ratio (~30–35% of original size) with negligible CPU overhead on modern multi-core processors (replaces legacy `lzo-rle`/`lz4`).
-* `PERCENT=100` — zram capacity = 100% of installed RAM. Dynamic limit: only consumes physical memory as data is actively compressed into it.
+- `ALGO=zstd` — Zstandard compression: much tighter ratio (~30–35% of original size) with negligible CPU overhead on modern multi-core processors (replaces legacy `lzo-rle`/`lz4`).
+- `PERCENT=100` — zram capacity = 100% of installed RAM. Dynamic limit: only consumes physical memory as data is actively compressed into it.
 
 ### Step 3: Apply the Configuration
 
@@ -845,18 +872,18 @@ swapon --show
 
 Expected `zramctl` output:
 
-| Field       | Expected Value                              |
-| ----------- | ------------------------------------------- |
-| `NAME`      | `/dev/zram0`                                |
-| `ALGORITHM` | `zstd`                                      |
-| `DISKSIZE`  | 100% of RAM (e.g. `7G` on an 8GB machine)   |
-| `MOUNTPOINT`| `[SWAP]`                                    |
+| Field        | Expected Value                            |
+| ------------ | ----------------------------------------- |
+| `NAME`       | `/dev/zram0`                              |
+| `ALGORITHM`  | `zstd`                                    |
+| `DISKSIZE`   | 100% of RAM (e.g. `7G` on an 8GB machine) |
+| `MOUNTPOINT` | `[SWAP]`                                  |
 
 Expected `swapon --show` priorities:
 
-| Swap Source  | Priority | Role                                        |
-| ------------ | -------- | ------------------------------------------- |
-| `/dev/zram0` | `100`    | High — Linux writes here first              |
-| `/swapfile`  | `-1`     | Low — SSD failsafe only after zram fills    |
+| Swap Source  | Priority | Role                                     |
+| ------------ | -------- | ---------------------------------------- |
+| `/dev/zram0` | `100`    | High — Linux writes here first           |
+| `/swapfile`  | `-1`     | Low — SSD failsafe only after zram fills |
 
 **Rule**: Linux writes to the highest priority swap first. This guarantees memory overflow goes into high-speed compressed RAM, with the SSD swapfile as a secondary failsafe.

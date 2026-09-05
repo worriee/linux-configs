@@ -21,8 +21,8 @@ Type your sudo password when prompted (once). That's it.
 | Step | What happens |
 | --- | --- |
 | 1. Path fix | Rewrites hardcoded `/home/julry` paths in keybinds + opencode config to your `$HOME` |
-| 2. Packages | Installs `kitty`, `rofi`, `flameshot`, `plank`, `picom`, `fastfetch`, `sticky`, `zram-tools` via apt + Starship prompt (official installer) |
-| 3. Dotfiles | Copies `.config/` (xfce4 keybinds, autostart, gtk-3.0, rofi, kitty, starship.toml, fastfetch, picom, zed, opencode), `.themes/` (Gruvbox), `.icons/` (WhiteSur), fonts → `fc-cache -f` |
+| 2. Packages | Installs `kitty`, `rofi`, `flameshot`, `picom`, `fastfetch`, `sticky`, `zram-tools` via apt + Starship prompt (official installer) |
+| 3. Dotfiles | Copies `.config/` (xfce4 keybinds, autostart, gtk-3.0, rofi, kitty, starship.toml, fastfetch, picom, zed, opencode), `.bashrc` (aliases: `fresh`, batt80/100/stat), `.themes/` (Gruvbox), `.icons/` (WhiteSur), fonts → `fc-cache -f` |
 | 4. Login screen | Wallpaper → `/usr/share/backgrounds/background.jpg`, writes `/etc/lightdm/slick-greeter.conf` (top-right: battery + full date, 12h clock only) |
 | 5. System tweaks | `vm.swappiness=180` + `vm.page-cluster=0` (zram pairing), `GRUB_TIMEOUT=5` + `update-grub`, ext4 reserved blocks → 1% (auto-detects root device), ZRAM swap (`zstd`, 100% RAM, idempotent) |
 | 6. Acer battery | Only if the machine is an Acer (auto-detected via `/sys/class/dmi/id/sys_vendor`): builds + installs `acer-wmi-battery` with 80% charge limit, autoloading on boot. Non-Acer: silently skipped |
@@ -70,6 +70,9 @@ cat /proc/sys/vm/page-cluster
 
 # Fonts visible
 fc-list | grep -i "jetbrains\|iosevka" | head -3
+
+# .bashrc aliases (should print the fresh/combined flush command)
+type fresh
 
 # Rofi launcher works
 ~/.config/rofi/launchers/type-3/launcher.sh

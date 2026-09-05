@@ -37,7 +37,7 @@ OK "paths rewritten"
 # ------------------------------------------------
 # 2. Packages (sudo)
 # ------------------------------------------------
-run_step "Installing packages" bash -c 'sudo apt update && sudo apt install -y rofi flameshot plank picom fastfetch sticky kitty zram-tools'
+run_step "Installing packages" bash -c 'sudo apt update && sudo apt install -y rofi flameshot picom fastfetch sticky kitty zram-tools'
 
 # Starship prompt (not in apt — official installer, skipped if present)
 STEP "Starship prompt engine"
@@ -46,6 +46,17 @@ if command -v starship >/dev/null; then
 else
     if curl -sS https://starship.rs/install.sh | sh -s -- -y; then OK "starship installed"
     else WARN "starship install failed — see mint-setup.md Section 11"; FAILED_STEPS+=("starship install"); fi
+fi
+
+# Install repo .bashrc (custom aliases: fresh, batt80/100/stat) — idempotent
+STEP "Installing .bashrc (aliases: fresh, batt80/100/stat)"
+if grep -q '^alias fresh=' "$HOME_DIR/.bashrc" 2>/dev/null; then
+    OK ".bashrc aliases already present"
+elif [ -f "$REPO/.bashrc" ]; then
+    cp -b "$REPO/.bashrc" "$HOME_DIR/.bashrc"
+    OK ".bashrc installed (backup: .bashrc~)"
+else
+    WARN "$REPO/.bashrc missing — aliases skipped"
 fi
 
 # Hook starship into bash (idempotent)
