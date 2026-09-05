@@ -2,17 +2,18 @@
 
 ## 0. Last Checkpoint
 
-- **Last Sync**: September 05, 2026, 07:57 AM PST
+- **Last Sync**: September 05, 2026, 10:00 AM PST
 
 ## 1. Recent Changes (Git)
 
 - **Vault Path**: [set after first `-obsidian`]
-- **Last Scan**: September 05, 2026, 07:57 AM PST
+- **Last Scan**: September 05, 2026, 10:00 AM PST
 
 > `-context` scan: `git status` + `git diff` + `git log @{u}..HEAD`. LIFO, newest on top.
 
 | File | Status | Δ Lines | What Changed |
 |---|---|---|---|
+| full repo → live sync | C | — | plank removed (autostart + package + docs); rofi switched to gruvbox (live + repo colors.rasi); picom/opencode/zed configs mirrored to live; S4 keybinds/S6 autostart/S9 acer fixed; S11B kitty heredoc synced; repo .bashrc backed up to git; all REVIEW-006..011 resolved + migrated (commit `a277c915`) |
 | `mint-setup.md` + `setup.sh` + `README.md` + `fresh-install.md` | M | — | swappiness reworked 10 → 100 → 180 (zram-first rationale), ZRAM section added (Section 13, zstd 100% RAM, priority tables), zram-tools added to package list + idempotent config step, screen dim toggle Section 12 + keybind XML synced; docs updated to match — commits `ff3c5a3b`, `fa2f0972`, `86bd8088` |
 | `.config/fastfetch/` | A | — | fastfetch replaced neofetch — custom Catnap-style config: all rows iconed, aligned, 12h month-word dates, since/age rows; `config.old.jsonc` backup kept (commit `68e7cf44`) |
 | `.config/kitty/kitty.conf` | M | — | cursor_shape=block fixed (commit `68e7cf44`) |
@@ -45,8 +46,8 @@ _New files visual:_
 .themes/Gruvbox-BL-LB-Dark-Soft-xhdpi/xfwm4/
 ```
 
-- **Unpushed**: 0 | **Staged**: 0 | **Unstaged**: 0 | **Untracked**: 0 (clean tree)
-- **Total Δ**: +514 / −17,574 lines (massive theme swap WhiteSur-Dark → Gruvbox)
+- **Unpushed**: 0 | **Staged**: 0 | **Unstaged**: 1 (project_memory.md) | **Untracked**: 0
+- **Total Δ**: +514 / −17,574 lines (massive theme swap WhiteSur-Dark → Gruvbox) — baseline from prior scan; HEAD `a277c915` synced with origin/main
 
 ---
 
