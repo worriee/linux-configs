@@ -6,7 +6,7 @@ Run in this order after a fresh install.
 
 ---
 
-## 1. Swappiness (60 → 180 with ZRAM)
+## 1. Swappiness + Swap Readahead (60 → 180 with ZRAM)
 
 ### What This Does
 
@@ -14,6 +14,7 @@ Swappiness controls how aggressively Linux moves idle RAM pages into swap instea
 
 - **Default (60):** moderate balance, tuned for slow disk swap.
 - **With ZRAM (180):** the kernel swaps idle pages aggressively into fast compressed RAM (see Section 13), freeing real RAM for apps and file cache. The SSD swapfile is only touched after zram fills up — so SSD wear goes *down*, not up.
+- **page-cluster (0):** controls swap readahead (pages fetched per I/O = 2^n). With zram, swap I/O is random compressed-RAM access — multi-page readahead just amplifies CPU work decompressing unused pages. `0` = one page per I/O, precise, no overfetch. Default on this kernel is already 0; setting it explicitly keeps the pairing documented.
 
 > Requires Section 13 (ZRAM) to be set up first. Without zram, keep this low (10) to protect the SSD.
 
@@ -25,11 +26,12 @@ Swappiness controls how aggressively Linux moves idle RAM pages into swap instea
 sudo nano /etc/sysctl.conf
 ```
 
-2. Scroll to the very bottom and add these two lines:
+2. Scroll to the very bottom and add these three lines:
 
 ```text
 # Prefer fast compressed RAM swap (zram) over SSD swapfile
 vm.swappiness=180
+vm.page-cluster=0
 ```
 
 3. Press `Ctrl + O`, then `Enter` to save, and `Ctrl + X` to exit.
@@ -39,13 +41,14 @@ vm.swappiness=180
 sudo sysctl -p
 ```
 
-5. Verify the active value:
+5. Verify the active values:
 
 ```bash
 cat /proc/sys/vm/swappiness
+cat /proc/sys/vm/page-cluster
 ```
 
-_(Expected output: `180`)_
+_(Expected output: `180` then `0`)_
 
 ---
 
@@ -123,6 +126,7 @@ df -h /
 | Optimization            | Default | New Value | Benefit                                                    |
 | ----------------------- | ------- | --------- | ---------------------------------------------------------- |
 | **vm.swappiness**       | `60`    | `180`     | Leans on fast compressed RAM (zram) first; SSD swapfile only as failsafe. |
+| **vm.page-cluster**     | `0`     | `0`       | Disables swap readahead — one page per I/O, no zram CPU waste.          |
 | **GRUB_TIMEOUT**        | `10s`   | `5s`      | Shaves 5 seconds off system startup time.                  |
 | **ext4 Reserved Space** | `5%`    | `1%`      | Reclaims ~20GB of SSD storage while maintaining stability. |
 
