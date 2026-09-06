@@ -21,13 +21,13 @@ Type your sudo password when prompted (once). That's it.
 | Step | What happens |
 | --- | --- |
 | 1. Path fix | Rewrites hardcoded `/home/julry` paths in keybinds + opencode config to your `$HOME` |
-| 2. Packages | Installs `kitty`, `rofi`, `flameshot`, `picom`, `fastfetch`, `sticky`, `zram-tools` via apt + Starship prompt (official installer) |
+| 2. Packages | Installs `kitty`, `rofi`, `flameshot`, `picom`, `fastfetch`, `sticky`, `zram-tools`, `earlyoom` via apt + Starship prompt (official installer) |
 | 3. Dotfiles | Copies `.config/` (xfce4 keybinds, autostart, gtk-3.0, rofi, kitty, starship.toml, fastfetch, picom, zed, opencode), `.bashrc` (aliases: `fresh`, batt80/100/stat), `.themes/` (Gruvbox), `.icons/` (WhiteSur), fonts → `fc-cache -f` |
 | 4. Login screen | Wallpaper → `/usr/share/backgrounds/background.jpg`, writes `/etc/lightdm/slick-greeter.conf` (top-right: battery + full date, 12h clock only) |
-| 5. System tweaks | `vm.swappiness=180` + `vm.page-cluster=0` (zram pairing), `GRUB_TIMEOUT=5` + `update-grub`, ext4 reserved blocks → 1% (auto-detects root device), ZRAM swap (`zstd`, 100% RAM, idempotent) |
+| 5. System tweaks | `vm.swappiness=180` + `vm.page-cluster=0` (zram pairing), kernel VM tuning (`vfs_cache_pressure=125`, dirty ratios 10/5, watermark 0/150), EarlyOOM guard (protects zed/opencode/kitty, prefers killing Brave), ModemManager disabled, `GRUB_TIMEOUT=5` + `update-grub`, ext4 reserved blocks → 1% (auto-detects root device), ZRAM swap (`zstd`, 100% RAM, idempotent) |
 | 6. Acer battery | Only if the machine is an Acer (auto-detected via `/sys/class/dmi/id/sys_vendor`): builds + installs `acer-wmi-battery` with 80% charge limit, autoloading on boot. Non-Acer: silently skipped |
 
-Keybinds included in the dotfiles copy: `Super+B` → Brave, `Super+R` → Rofi launcher, `Super+Return` → Kitty terminal, `Super+Alt+B` → screen dim toggle, plus everything in `mint-setup.md` Section 4.
+Keybinds included in the dotfiles copy: `Super+B` → Brave, `Super+R` → Rofi launcher, `Super+Return` → Kitty terminal, `Super+Alt+B` → screen dim toggle, plus everything in `mint-setup.md` Section 2.
 
 Safety notes:
 
@@ -90,7 +90,7 @@ starship --version
 | `Super+R` opens nothing | Log out/in once — xfconf reloads keybinds at session start |
 | Login screen shows wrong wallpaper | Check `/usr/share/backgrounds/background.jpg` exists; re-run `setup.sh` step 4 |
 | Rofi icons missing | Your icon theme name differs — edit `icon-theme` in `~/.config/rofi/launchers/type-3/style-3.rasi` |
-| Acer: `modprobe` failed | Reboot — the module autoloads via `/etc/modules-load.d/`; recompiles needed after kernel updates (see `mint-setup.md` Section 9) |
+| Acer: `modprobe` failed | Reboot — the module autoloads via `/etc/modules-load.d/`; recompiles needed after kernel updates (see `mint-setup.md` Section 7) |
 | Script step failed | Re-run `bash setup.sh` — steps are idempotent; or apply manually from `mint-setup.md` |
 
 ---

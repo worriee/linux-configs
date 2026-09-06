@@ -140,3 +140,4 @@ eval "$(starship init bash)"
 
 # Flush the ZRAM compressed pool and restart the graphical desktop session
 alias fresh='(sudo systemctl restart zramswap 2>/dev/null || sudo systemctl restart zram-config) && sudo systemctl restart lightdm'
+export NODE_OPTIONS="--max-old-space-size=1536"

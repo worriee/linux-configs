@@ -1,24 +1,28 @@
 # Linux Mint XFCE Post-Install System Optimizations
 
-Three essential performance and storage tweaks for Linux Mint on laptops with SSDs and 8GB–16GB RAM. Applies to any edition (Cinnamon, XFCE, MATE) — none of these are desktop-environment specific.
+Seven performance, storage and service optimizations for Linux Mint on laptops with SSDs and 8GB–16GB RAM, tuned for a coding-heavy workflow (Zed, opencode, Node, Kitty). Applies to any edition (Cinnamon, XFCE, MATE) — none of these are desktop-environment specific.
 
 Run in this order after a fresh install.
 
 ---
 
-## 1. Swappiness + Swap Readahead (60 → 180 with ZRAM)
+## 1. System Optimizations (Kernel, Boot, Storage & Services)
 
-### What This Does
+Everything the kernel, bootloader, filesystem and background services need to run fast and lean on this machine — swap strategy, boot time, disk space, memory-reclaim behavior, OOM protection and dev-tooling tuning.
+
+### 1A. Swappiness + Swap Readahead (60 → 180 with ZRAM)
+
+#### What This Does
 
 Swappiness controls how aggressively Linux moves idle RAM pages into swap instead of keeping them in physical memory.
 
 - **Default (60):** moderate balance, tuned for slow disk swap.
-- **With ZRAM (180):** the kernel swaps idle pages aggressively into fast compressed RAM (see Section 13), freeing real RAM for apps and file cache. The SSD swapfile is only touched after zram fills up — so SSD wear goes _down_, not up.
+- **With ZRAM (180):** the kernel swaps idle pages aggressively into fast compressed RAM (see Section 11), freeing real RAM for apps and file cache. The SSD swapfile is only touched after zram fills up — so SSD wear goes _down_, not up.
 - **page-cluster (0):** controls swap readahead (pages fetched per I/O = 2^n). With zram, swap I/O is random compressed-RAM access — multi-page readahead just amplifies CPU work decompressing unused pages. `0` = one page per I/O, precise, no overfetch. Default on this kernel is already 0; setting it explicitly keeps the pairing documented.
 
-> Requires Section 13 (ZRAM) to be set up first. Without zram, keep this low (10) to protect the SSD.
+> Requires Section 11 (ZRAM) to be set up first. Without zram, keep this low (10) to protect the SSD.
 
-### Step-by-Step
+#### Step-by-Step
 
 1. Open the sysctl configuration file:
 
@@ -52,13 +56,13 @@ _(Expected output: `180` then `0`)_
 
 ---
 
-## 2. Reduce GRUB Boot Menu Timeout (10s → 5s)
+### 1B. Reduce GRUB Boot Menu Timeout (10s → 5s)
 
-### What This Does
+#### What This Does
 
 When dual-booting or restarting, the GRUB menu waits 10 seconds before automatically booting your OS. Reducing this to 5 seconds saves boot time while still leaving enough time to select recovery options if needed.
 
-### Step-by-Step
+#### Step-by-Step
 
 1. Open the GRUB configuration file:
 
@@ -87,9 +91,9 @@ sudo update-grub
 
 ---
 
-## 3. Reclaim Reserved Root Space (5% → 1%)
+### 1C. Reclaim Reserved Root Space (5% → 1%)
 
-### What This Does
+#### What This Does
 
 By default, the `ext4` filesystem reserves **5% of your total drive space** exclusively for the `root` user.
 
@@ -97,7 +101,7 @@ By default, the `ext4` filesystem reserves **5% of your total drive space** excl
 - On modern SSDs (like 512GB drives), 5% reserves **~25GB of wasted space**.
 - Reducing it to **1%** retains a safe ~5GB buffer for system logs while instantly freeing ~20GB of usable disk storage.
 
-### Step-by-Step
+#### Step-by-Step
 
 1. Find your main root partition identifier:
 
@@ -121,6 +125,100 @@ _(Replace `/dev/nvme0n1p2` with the partition found in step 1)_
 df -h /
 ```
 
+### 1D. Kernel VM Tuning for Coding Workloads (Cache, Writeback, Watermark)
+
+#### What This Does
+
+Four sysctl drop-in files tune how the kernel manages caches and memory reclaim for a coding-heavy workload (Zed, opencode, Node builds, Kitty):
+
+- **`vm.vfs_cache_pressure=125`** — reclaims inode/dentry cache 25% faster than the default (100), freeing RAM for editors and build tools.
+- **`vm.dirty_ratio=10` + `vm.dirty_background_ratio=5`** — halves the default writeback thresholds (20/10) so large git operations or builds produce smaller, smoother disk flushes instead of latency spikes.
+- **`vm.watermark_boost_factor=0`** — disables the kernel's watermark boost, which on 8GB machines can trigger sudden large reclaim bursts (visible stalls).
+- **`vm.watermark_scale_factor=150`** — wakes `kswapd` earlier (default 10 → 150) so reclaim happens gradually in the background instead of all at once when RAM runs low.
+
+#### Step-by-Step
+
+1. Write the four drop-in files and apply them to the running kernel:
+
+```bash
+# vfs cache pressure — faster dentry/inode reclaim
+echo "vm.vfs_cache_pressure=125" | sudo tee /etc/sysctl.d/70-vfs-cache-pressure.conf
+
+# dirty writeback ratios — smaller, smoother flushes
+printf 'vm.dirty_ratio=10\nvm.dirty_background_ratio=5\n' | sudo tee /etc/sysctl.d/80-dirty-ratios.conf
+
+# watermark boost off — no sudden reclaim stalls
+echo "vm.watermark_boost_factor=0" | sudo tee /etc/sysctl.d/85-watermark-boost.conf
+
+# earlier background reclaim — gentler under memory pressure
+echo "vm.watermark_scale_factor=150" | sudo tee /etc/sysctl.d/86-watermark-scale.conf
+
+# Apply all four immediately
+sudo sysctl --system
+```
+
+2. Verify the active values:
+
+```bash
+sysctl vm.vfs_cache_pressure vm.dirty_ratio vm.dirty_background_ratio vm.watermark_boost_factor vm.watermark_scale_factor
+```
+
+_(Expected output: `125`, `10`, `5`, `0`, `150` — files land in `/etc/sysctl.d/` and apply automatically on every boot.)_
+
+### 1E. EarlyOOM Guard (Protect Editors, Prefer Killing Brave)
+
+#### What This Does
+
+`earlyoom` watches free RAM/swap and kills the biggest memory hog **before** the kernel OOM-killer freezes the whole desktop. The config here protects the coding stack (`zed`, `opencode`, `node`, `kitty`, `bash`) via `--avoid` and makes Brave the preferred sacrifice via `--prefer` — a browser tab is recoverable, an editor session is not. `-m 5 -s 5` triggers at 5% RAM/swap free; `-r 3600` logs a status line hourly.
+
+#### Step-by-Step
+
+1. Install the daemon, write the custom process priority rules, and restart it:
+
+```bash
+sudo apt install -y earlyoom
+
+echo 'EARLYOOM_ARGS="-m 5 -s 5 -r 3600 --avoid \"(^|/)(zed|opencode|node|kitty|bash)$\" --prefer \"(^|/)(brave|brave-browser)$\""' | sudo tee /etc/default/earlyoom && sudo systemctl restart earlyoom
+```
+
+2. Verify:
+
+```bash
+systemctl is-active earlyoom && cat /etc/default/earlyoom
+```
+
+_(Expected: `active` plus the `EARLYOOM_ARGS` line above. Config persists across reboots — `earlyoom` is enabled by default when installed via apt.)_
+
+### 1F. Disable ModemManager
+
+#### What This Does
+
+Stops the modem-management daemon and prevents it from starting at boot. This laptop has no mobile broadband, so the daemon is pure background overhead. Wi-Fi and Bluetooth are unaffected — those run through NetworkManager.
+
+#### Step-by-Step
+
+```bash
+# Stop the service and prevent it from starting on future system boots
+sudo systemctl stop ModemManager && sudo systemctl disable ModemManager
+```
+
+Verify: `systemctl is-enabled ModemManager` → `disabled`.
+
+### 1G. Node.js Memory Ceiling
+
+#### What This Does
+
+Caps the V8 JavaScript heap at **1536MB** so opencode sessions and npm builds degrade gracefully on the 8GB machine instead of starving zram and triggering the OOM guard. The limit applies to every `node` process started from your shell.
+
+#### Step-by-Step
+
+```bash
+# Append the Node.js memory ceiling parameter to your user shell configuration
+echo 'export NODE_OPTIONS="--max-old-space-size=1536"' >> ~/.bashrc
+```
+
+Verify: `source ~/.bashrc && echo $NODE_OPTIONS` → `--max-old-space-size=1536`.
+
 ## Quick Reference Summary Table
 
 | Optimization            | Default | New Value | Benefit                                                                   |
@@ -129,10 +227,16 @@ df -h /
 | **vm.page-cluster**     | `0`     | `0`       | Disables swap readahead — one page per I/O, no zram CPU waste.            |
 | **GRUB_TIMEOUT**        | `10s`   | `5s`      | Shaves 5 seconds off system startup time.                                 |
 | **ext4 Reserved Space** | `5%`    | `1%`      | Reclaims ~20GB of SSD storage while maintaining stability.                |
+| **vm.vfs_cache_pressure** | `100`   | `125`     | Faster dentry/inode cache reclaim — frees RAM for editors and builds.     |
+| **vm.dirty_ratio / dirty_background** | `20 / 10` | `10 / 5`  | Smaller writeback bursts — smoother saves and git operations.             |
+| **vm.watermark_boost / scale** | `10000 / 10` | `0 / 150` | No sudden reclaim stalls; earlier, gentler background reclaim.            |
+| **EarlyOOM**            | _none_  | `active`  | Kills memory-hog Brave first — protects zed/opencode/kitty sessions.      |
+| **ModemManager**        | `enabled` | `disabled` | Removes unneeded modem daemon (Wi-Fi/Bluetooth unaffected).              |
+| **NODE_OPTIONS**        | _none_  | `1536MB`  | Caps Node heap so opencode/npm builds can't exhaust 8GB RAM.              |
 
 ---
 
-## 4. Keyboard Shortcuts & Window Manager Keybinds
+## 2. Keyboard Shortcuts & Window Manager Keybinds
 
 Custom shortcuts captured from current Mint XFCE setup (stored in `~/.config/xfce4/xfconf/xfce-perchannel-xml/xfce4-keyboard-shortcuts.xml`). Recreate these on the new laptop.
 
@@ -194,9 +298,9 @@ Alternatively, re-add them manually via **Settings → Keyboard → Application 
 
 ---
 
-## 5. No-Reboot Reset & System Cleanup
+## 3. No-Reboot Reset & System Cleanup
 
-### 5A. Restart the Entire Desktop Session (Closest to a Full Reboot)
+### 3A. Restart the Entire Desktop Session (Closest to a Full Reboot)
 
 Kills the graphical session, logs you out, restarts the display manager, and clears loaded desktop memory — without touching the kernel or power state.
 
@@ -206,7 +310,7 @@ sudo systemctl restart lightdm
 
 **Warning: Save your work first.** Restarting LightDM terminates your current session, so unsaved work in editors or browsers will be lost.
 
-### 5B. Flush the Compressed ZRAM Pool & Restart the Desktop Session (Combined)
+### 3B. Flush the Compressed ZRAM Pool & Restart the Desktop Session (Combined)
 
 Flushes the compressed ZRAM pool and immediately restarts the desktop session. Restarts the zram daemon first, then lightdm so zram swap and the swapfile re-initialize cleanly — a plain `systemctl restart zramswap` alone would leave swap disabled.
 
@@ -223,7 +327,7 @@ alias fresh='(sudo systemctl restart zramswap 2>/dev/null || sudo systemctl rest
 - `zramswap` restarts the ZRAM daemon (fallback unit name `zram-config` on older/other distros), then `lightdm` restarts the whole desktop session.
 - **Warning: Save your work first.** LightDM kills the session.
 
-### 5C. Restart Only the XFCE Desktop & Panel (Keeps Apps Open)
+### 3C. Restart Only the XFCE Desktop & Panel (Keeps Apps Open)
 
 Reloads the interface without losing open browser tabs or terminal windows. Fixes frozen panel, glitchy UI, or stale theme.
 
@@ -234,7 +338,7 @@ xfce4-panel -r && xfwm4 --replace &
 - `xfce4-panel -r` reloads the taskbar, tray icons, and widgets.
 - `xfwm4 --replace` restarts the window manager to fix stutters, borders, or compositor lag.
 
-### 5D. Clear RAM & Buffer Cache (Memory Refresh)
+### 3D. Clear RAM & Buffer Cache (Memory Refresh)
 
 Gets a fresh-boot-like memory state after closing heavy applications.
 
@@ -244,7 +348,7 @@ sudo sync && echo 3 | sudo tee /proc/sys/vm/drop_caches
 
 Writes pending data to disk (`sync`), then flushes pagecache, dentries, and inodes to free memory immediately.
 
-### 5E. Restart the Network Stack (Wi-Fi & Bluetooth)
+### 3E. Restart the Network Stack (Wi-Fi & Bluetooth)
 
 Fixes Wi-Fi or Bluetooth that stopped responding, without rebooting.
 
@@ -252,7 +356,7 @@ Fixes Wi-Fi or Bluetooth that stopped responding, without rebooting.
 sudo systemctl restart NetworkManager
 ```
 
-### 5F. Remove Unused Packages & Their Config Files (One Command)
+### 3F. Remove Unused Packages & Their Config Files (One Command)
 
 Removes orphaned dependencies, packages with leftover config files (`rc` status), clears the apt cache, and drops unused Flatpak runtimes:
 
@@ -269,7 +373,7 @@ What each part does:
 
 ---
 
-## 6. Application Autostart Configuration
+## 4. Application Autostart Configuration
 
 Location in system: **Settings** → **Session and Startup** → **Application Autostart**
 
@@ -351,7 +455,7 @@ _(Adjust `linux-configs/` to wherever this repo lives on the new laptop)_
 
 ---
 
-## 7. XFCE Panel Styling (Rounded Corners & Transparent Buttons)
+## 5. XFCE Panel Styling (Rounded Corners & Transparent Buttons)
 
 ### Edit the GTK User Stylesheet
 
@@ -411,7 +515,7 @@ xfce4-panel -r
 
 ---
 
-## 8. Login Screen UI (Slick-Greeter Top-Right Minimal)
+## 6. Login Screen UI (Slick-Greeter Top-Right Minimal)
 
 Configures the default Mint login screen (slick-greeter) to show **only** the battery percentage and a full date + 12-hour clock, both in the top-right corner (order: battery → date → time). Everything else in the top panel is hidden.
 
@@ -469,7 +573,7 @@ _(This logs you out — save your work first.)_
 
 ---
 
-## 9. Acer Battery Health Mode (80% Charge Limit) — ACER LAPTOPS ONLY
+## 7. Acer Battery Health Mode (80% Charge Limit) — ACER LAPTOPS ONLY
 
 Replicates the **80% Battery Charge Limit** from Acer Care Center on Windows using the open-source `acer-wmi-battery` driver. **Skip this section entirely on non-Acer laptops** — the WMI interface does not exist on other brands.
 
@@ -561,11 +665,11 @@ sudo modprobe acer-wmi-battery
 
 ---
 
-## 10. Rofi Community Theme (Super+R Launcher)
+## 8. Rofi Community Theme (Super+R Launcher)
 
 Installs the `adi1090x` rofi community theme suite, configures the **Type-3 launcher** with Gruvbox colors, WhiteSur icons, and `Super+R` as the launch key. On new laptops, restore from repo instead of re-cloning.
 
-### 10A. Fresh Install (From GitHub)
+### 8A. Fresh Install (From GitHub)
 
 Skip this subsection if restoring from repo (see 10B).
 
@@ -591,7 +695,7 @@ xfconf-query -c xfce4-keyboard-shortcuts -p "/commands/custom/<Super>r" -n -t st
 rm -rf ~/rofi-community-themes
 ```
 
-### 10B. Restore From Repo (New Laptop)
+### 8B. Restore From Repo (New Laptop)
 
 Skip if you did 10A. This copies pre-configured files from the repo into your home directory.
 
@@ -622,11 +726,11 @@ xfconf-query -c xfce4-keyboard-shortcuts -p "/commands/custom/<Super>r" -n -t st
 
 ---
 
-## 11. Kitty Terminal + Starship Powerline Prompt
+## 9. Kitty Terminal + Starship Powerline Prompt
 
-Installs the Kitty GPU-accelerated terminal and the Starship prompt engine, with JetBrains Mono typography, picom frosted-glass transparency, Gruvbox Dark Soft colors, and a single-line Powerline arrow prompt. `Super+Return` opens Kitty (already in the keybinds file, Section 4).
+Installs the Kitty GPU-accelerated terminal and the Starship prompt engine, with JetBrains Mono typography, picom frosted-glass transparency, Gruvbox Dark Soft colors, and a single-line Powerline arrow prompt. `Super+Return` opens Kitty (already in the keybinds file, Section 2).
 
-### 11A. Install Kitty Terminal
+### 9A. Install Kitty Terminal
 
 ```bash
 sudo apt update && sudo apt install -y kitty
@@ -634,7 +738,7 @@ sudo apt update && sudo apt install -y kitty
 
 - `sudo apt install -y kitty` — installs the Kitty binary, default kittens, and hardware rendering support.
 
-### 11B. Configure Fonts, Padding, Transparency, and Audio Bell
+### 9B. Configure Fonts, Padding, Transparency, and Audio Bell
 
 ```bash
 mkdir -p ~/.config/kitty
@@ -680,7 +784,7 @@ EOF
 - `remember_window_size  no` — stops Kitty from restoring the last maximized/terminal geometry; always uses the defaults below.
 - `initial_window_width 900` / `initial_window_height 800` — default first-window size in pixels.
 
-### 11C. Apply the Gruvbox Dark Soft Palette
+### 9C. Apply the Gruvbox Dark Soft Palette
 
 ```bash
 kitty +kitten themes --reload-in=all "Gruvbox Dark Soft"
@@ -689,7 +793,7 @@ kitty +kitten themes --reload-in=all "Gruvbox Dark Soft"
 - `kitty +kitten themes` — Kitty's built-in theme browser/downloader; writes `current-theme.conf`.
 - `--reload-in=all` — all running Kitty instances reload colors immediately.
 
-### 11D. Install the Starship Prompt Engine
+### 9D. Install the Starship Prompt Engine
 
 ```bash
 sudo apt install -y curl
@@ -698,7 +802,7 @@ curl -sS https://starship.rs/install.sh | sh -s -- -y
 
 - `sh -s -- -y` — automated install into `/usr/local/bin/starship`.
 
-### 11E. Hook Starship into Bash
+### 9E. Hook Starship into Bash
 
 ```bash
 echo 'eval "$(starship init bash)"' >> ~/.bashrc
@@ -707,7 +811,7 @@ source ~/.bashrc
 
 - Appends the init hook so Starship renders on every new tab/window.
 
-### 11F. Gruvbox Powerline Arrow Prompt
+### 9F. Gruvbox Powerline Arrow Prompt
 
 ```bash
 tee ~/.config/starship.toml << 'EOF'
@@ -758,7 +862,7 @@ EOF
 
 ---
 
-## 12. X11 Software Screen Dim Toggle (Super+Alt+B)
+## 10. X11 Software Screen Dim Toggle (Super+Alt+B)
 
 Software brightness toggle for X11: dims the display to 60% and back with one hotkey. Works independently of hardware backlight — useful on laptops where minimum brightness is still too bright. The display name is detected dynamically (`eDP`, `eDP-1`, `LVDS-1`, ...), so it works across laptop models.
 
@@ -825,9 +929,9 @@ Press **`Super + Alt + B`**: screen drops to 60% brightness. Press again: back t
 
 ---
 
-## 13. ZRAM Compressed Swap (zstd)
+## 11. ZRAM Compressed Swap (zstd)
 
-Compressed swap in RAM: a virtual block device (`/dev/zram0`) that holds swapped pages compressed in memory instead of writing them to the SSD. Works together with Section 1 (swappiness 180): Linux first compresses idle pages into fast RAM, and only touches the SSD swapfile after zram fills up.
+Compressed swap in RAM: a virtual block device (`/dev/zram0`) that holds swapped pages compressed in memory instead of writing them to the SSD. Works together with Section 1A (swappiness 180): Linux first compresses idle pages into fast RAM, and only touches the SSD swapfile after zram fills up.
 
 ### Step 1: Install the Management Package
 

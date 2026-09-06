@@ -45,7 +45,7 @@ if command -v starship >/dev/null; then
     OK "starship already installed"
 else
     if curl -sS https://starship.rs/install.sh | sh -s -- -y; then OK "starship installed"
-    else WARN "starship install failed — see mint-setup.md Section 11"; FAILED_STEPS+=("starship install"); fi
+    else WARN "starship install failed — see mint-setup.md Section 9"; FAILED_STEPS+=("starship install"); fi
 fi
 
 # Install repo .bashrc (custom aliases: fresh, batt80/100/stat) — idempotent
@@ -105,7 +105,7 @@ else
 fi
 EOF
     chmod +x "$HOME_DIR/.local/bin/toggle-screen-dim.sh"
-    OK "toggle-screen-dim.sh created (mint-setup.md Section 12)"
+    OK "toggle-screen-dim.sh created (mint-setup.md Section 10)"
 fi
 
 # ------------------------------------------------
@@ -135,7 +135,7 @@ run_step "Swappiness 180 + page-cluster 0 (zram)" bash -c 'printf "vm.swappiness
 
 run_step "GRUB timeout 5s" bash -c 'sudo sed -i "s/^GRUB_TIMEOUT=.*/GRUB_TIMEOUT=5/" /etc/default/grub && sudo update-grub >/dev/null'
 
-# ZRAM: zstd + 100% RAM (see mint-setup.md Section 13)
+# ZRAM: zstd + 100% RAM (see mint-setup.md Section 11)
 STEP "ZRAM compressed swap (zstd, 100% RAM)"
 if grep -q "^ALGO=zstd" /etc/default/zramswap 2>/dev/null && grep -q "^PERCENT=100" /etc/default/zramswap 2>/dev/null; then
     OK "zramswap already configured"
@@ -143,7 +143,7 @@ else
     if printf 'ALGO=zstd\nPERCENT=100\n' | sudo tee /etc/default/zramswap >/dev/null && sudo systemctl restart zramswap >/dev/null 2>&1; then
         OK "zramswap configured (zstd, 100%)"
     else
-        WARN "zramswap config failed — see mint-setup.md Section 13"; FAILED_STEPS+=("zram config")
+        WARN "zramswap config failed — see mint-setup.md Section 11"; FAILED_STEPS+=("zram config")
     fi
 fi
 
@@ -154,6 +154,50 @@ if lsblk -no FSTYPE "$ROOT_DEV" 2>/dev/null | grep -q ^ext; then
     else WARN "tune2fs failed on $ROOT_DEV — skipped"; FAILED_STEPS+=("ext4 reserve"); fi
 else
     WARN "root ($ROOT_DEV) is not ext4 — skipped"
+fi
+
+# Kernel VM tuning: cache pressure, writeback, watermark (see mint-setup.md Section 1D)
+STEP "Kernel VM tuning (vfs cache, dirty ratios, watermark)"
+if grep -q "^vm.vfs_cache_pressure=125" /etc/sysctl.d/70-vfs-cache-pressure.conf 2>/dev/null \
+    && grep -q "^vm.watermark_scale_factor=150" /etc/sysctl.d/86-watermark-scale.conf 2>/dev/null; then
+    OK "VM tuning already configured"
+else
+    if printf 'vm.vfs_cache_pressure=125\n' | sudo tee /etc/sysctl.d/70-vfs-cache-pressure.conf >/dev/null \
+        && printf 'vm.dirty_ratio=10\nvm.dirty_background_ratio=5\n' | sudo tee /etc/sysctl.d/80-dirty-ratios.conf >/dev/null \
+        && printf 'vm.watermark_boost_factor=0\n' | sudo tee /etc/sysctl.d/85-watermark-boost.conf >/dev/null \
+        && printf 'vm.watermark_scale_factor=150\n' | sudo tee /etc/sysctl.d/86-watermark-scale.conf >/dev/null \
+        && sudo sysctl --system >/dev/null 2>&1; then
+        OK "VM tuning applied (vfs 125, dirty 10/5, watermark 0/150)"
+    else
+        WARN "VM tuning failed — see mint-setup.md Section 1D"; FAILED_STEPS+=("VM tuning")
+    fi
+fi
+
+# EarlyOOM: guard daemon — protects the coding stack, prefers killing Brave (see mint-setup.md Section 1E)
+STEP "EarlyOOM guard (protect zed/opencode/kitty, prefer killing Brave)"
+if grep -q "EARLYOOM_ARGS" /etc/default/earlyoom 2>/dev/null; then
+    OK "earlyoom already configured"
+else
+    if sudo apt install -y earlyoom >/dev/null 2>&1 \
+        && echo 'EARLYOOM_ARGS="-m 5 -s 5 -r 3600 --avoid \"(^|/)(zed|opencode|node|kitty|bash)$\" --prefer \"(^|/)(brave|brave-browser)$\""' | sudo tee /etc/default/earlyoom >/dev/null \
+        && sudo systemctl enable --now earlyoom >/dev/null 2>&1 \
+        && sudo systemctl restart earlyoom >/dev/null 2>&1; then
+        OK "earlyoom active (avoid: zed/opencode/node/kitty/bash, prefer: brave)"
+    else
+        WARN "earlyoom setup failed — see mint-setup.md Section 1E"; FAILED_STEPS+=("earlyoom")
+    fi
+fi
+
+# ModemManager: unneeded on a laptop without mobile broadband (see mint-setup.md Section 1F)
+STEP "Disable ModemManager"
+if ! systemctl is-enabled ModemManager >/dev/null 2>&1; then
+    OK "ModemManager already disabled (or not installed)"
+else
+    if sudo systemctl disable --now ModemManager >/dev/null 2>&1; then
+        OK "ModemManager disabled"
+    else
+        WARN "Could not disable ModemManager — see mint-setup.md Section 1F"; FAILED_STEPS+=("ModemManager")
+    fi
 fi
 
 # ------------------------------------------------
@@ -175,7 +219,7 @@ if grep -qi acer <<<"$VENDOR"; then
         rm -rf /tmp/acer-wmi-battery
         OK "battery health mode installed (limit 80%)"
     else
-        WARN "Acer driver build failed — see mint-setup.md Section 9"; FAILED_STEPS+=("acer battery driver")
+        WARN "Acer driver build failed — see mint-setup.md Section 7"; FAILED_STEPS+=("acer battery driver")
     fi
 else
     STEP "Vendor: $VENDOR — not an Acer, skipping battery driver"
