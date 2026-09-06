@@ -219,23 +219,6 @@ echo 'export NODE_OPTIONS="--max-old-space-size=1536"' >> ~/.bashrc
 
 Verify: `source ~/.bashrc && echo $NODE_OPTIONS` → `--max-old-space-size=1536`.
 
-## Quick Reference Summary Table
-
-| Optimization            | Default | New Value | Benefit                                                                   |
-| ----------------------- | ------- | --------- | ------------------------------------------------------------------------- |
-| **vm.swappiness**       | `60`    | `180`     | Leans on fast compressed RAM (zram) first; SSD swapfile only as failsafe. |
-| **vm.page-cluster**     | `0`     | `0`       | Disables swap readahead — one page per I/O, no zram CPU waste.            |
-| **GRUB_TIMEOUT**        | `10s`   | `5s`      | Shaves 5 seconds off system startup time.                                 |
-| **ext4 Reserved Space** | `5%`    | `1%`      | Reclaims ~20GB of SSD storage while maintaining stability.                |
-| **vm.vfs_cache_pressure** | `100`   | `125`     | Faster dentry/inode cache reclaim — frees RAM for editors and builds.     |
-| **vm.dirty_ratio / dirty_background** | `20 / 10` | `10 / 5`  | Smaller writeback bursts — smoother saves and git operations.             |
-| **vm.watermark_boost / scale** | `10000 / 10` | `0 / 150` | No sudden reclaim stalls; earlier, gentler background reclaim.            |
-| **EarlyOOM**            | _none_  | `active`  | Kills memory-hog Brave first — protects zed/opencode/kitty sessions.      |
-| **ModemManager**        | `enabled` | `disabled` | Removes unneeded modem daemon (Wi-Fi/Bluetooth unaffected).              |
-| **NODE_OPTIONS**        | _none_  | `1536MB`  | Caps Node heap so opencode/npm builds can't exhaust 8GB RAM.              |
-| **MT7902 driver** _(optional)_ | _none_ | `DKMS auto` | Wi-Fi + BT work on MediaTek 7902 cards; auto-rebuilds per kernel update.  |
-| **Acer battery health** _(optional)_ | _none_ | `80% cap` | Doubles battery lifespan by capping charge at 80% (Acer laptops only).    |
-
 ---
 
 ## 2. OPTIONAL — Hardware-Specific Drivers (Auto-Detected)
@@ -1072,3 +1055,45 @@ Expected `swapon --show` priorities:
 | `/swapfile`  | `-1`     | Low — SSD failsafe only after zram fills |
 
 **Rule**: Linux writes to the highest priority swap first. This guarantees memory overflow goes into high-speed compressed RAM, with the SSD swapfile as a secondary failsafe.
+
+---
+
+## Quick Reference Summary Table
+
+### Performance (Kernel & Services)
+
+| Item | Default | New Value | Benefit |
+| -------------------------- | ------------- | ------------------ | -------------------------------------------------------- |
+| **vm.swappiness** | `60` | `180` | Leans on fast zram swap first; SSD swapfile as failsafe |
+| **vm.page-cluster** | `0` | `0` | One page per swap I/O — no zram CPU waste |
+| **vm.vfs_cache_pressure** | `100` | `125` | Faster cache reclaim — RAM freed for editors/builds |
+| **vm.dirty_ratio** | `20` | `10` | Smaller writeback bursts — no save/git stalls |
+| **vm.dirty_background_ratio** | `10` | `5` | Earlier background flush — smoother saves |
+| **vm.watermark_boost_factor** | `10000` | `0` | Disables sudden reclaim bursts/stalls |
+| **vm.watermark_scale_factor** | `10` | `150` | Earlier, gentler background reclaim |
+| **EarlyOOM** | _none_ | `active` (`-m 5 -s 5`) | Kills Brave first — protects editor sessions |
+| **ModemManager** | `enabled` | `disabled` | Less background overhead |
+| **NODE_OPTIONS heap cap** | _unlimited_ | `1536MB` | Node builds can't exhaust 8GB RAM |
+
+### Storage, Boot & Optional Hardware
+
+| Item | Default | New Value | Benefit |
+| ---------------------- | ------------ | ------------------- | ---------------------------------------------- |
+| **GRUB_TIMEOUT** | `10s` | `5s` | Faster boot, still time for recovery menu |
+| **ext4 reserved blocks** | `5%` | `1%` | ~20GB SSD space reclaimed |
+| **ZRAM swap** | SSD swapfile | `zstd`, 100% RAM | Fast compressed swap; less SSD wear |
+| **MT7902 Wi-Fi/BT** _(opt)_ | _none_ | `DKMS auto-rebuild` | Wi-Fi + BT work on MediaTek 7902 cards |
+| **Acer battery health** _(opt)_ | `100%` charge | `80%` cap | Doubles battery lifespan (Acer only) |
+
+### Look & Feel
+
+| Item | Default | New Value | Benefit |
+| --------------------- | -------------- | ------------------------------------------------------------ | ---------------------------------- |
+| **Keybinds** | Mint defaults | `Super+B/R/Return/E/Z` set | Muscle-memory app launching |
+| **Autostart** | session defaults | curated (picom, tray apps) | Compositor + tray ready at login |
+| **XFCE panel** | stock | rounded + transparent buttons | Clean look |
+| **Login screen** | default greeter | slick-greeter minimal, wallpaper | Matches desktop look |
+| **Rofi launcher** | stock rofi | `style-3` + Gruvbox + WhiteSur icons | Themed `Super+R` launcher |
+| **Kitty terminal** | stock config | JetBrains Mono 11, 85% opacity, Gruvbox Dark Soft | Gruvbox-consistent GPU terminal |
+| **Starship prompt** | plain bash | Gruvbox powerline | Git-aware visual prompt |
+| **Screen dim toggle** | _none_ | `Super+Alt+B` (1.0 → 0.6) | Software dim on any laptop panel |
