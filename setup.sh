@@ -201,8 +201,30 @@ else
 fi
 
 # ------------------------------------------------
-# 6. Acer battery health mode (auto-detected)
+# 6. Optional hardware drivers (auto-detected)
 # ------------------------------------------------
+
+# MT7902 Wi-Fi/BT — only if the card is present (see mint-setup.md Section 2A)
+STEP "MT7902 Wi-Fi/BT driver (optional, device-dependent)"
+if ! lspci -nn 2>/dev/null | grep -qi "14c3:7902"; then
+    OK "MT7902 card not present — skipping"
+elif dkms status 2>/dev/null | grep -q "^mt7902-wifi/"; then
+    OK "MT7902 drivers already registered in DKMS"
+else
+    if sudo apt install -y build-essential "linux-headers-$(uname -r)" dkms >/dev/null 2>&1 \
+        && sudo cp -r "$REPO/drivers/mt7902/mt7902-wifi" /usr/src/mt7902-wifi-1.0 \
+        && sudo cp -r "$REPO/drivers/mt7902/mt7902-bt" /usr/src/mt7902-bt-1.0 \
+        && sudo dkms install -m mt7902-wifi -v 1.0 >/dev/null 2>&1 \
+        && sudo dkms install -m mt7902-bt -v 1.0 >/dev/null 2>&1 \
+        && sudo make -C /usr/src/mt7902-wifi-1.0 install_fw >/dev/null 2>&1 \
+        && sudo make -C /usr/src/mt7902-bt-1.0 install_fw >/dev/null 2>&1; then
+        OK "MT7902 drivers installed (Wi-Fi + BT, firmware + DKMS auto-rebuild)"
+    else
+        WARN "MT7902 setup failed — see mint-setup.md Section 2A"; FAILED_STEPS+=("MT7902 driver")
+    fi
+fi
+
+# Acer battery health mode — only on Acer laptops (see mint-setup.md Section 2B)
 VENDOR="$(cat /sys/class/dmi/id/sys_vendor 2>/dev/null || echo unknown)"
 if grep -qi acer <<<"$VENDOR"; then
     STEP "Acer detected — battery health driver (80% charge limit)"
@@ -219,7 +241,7 @@ if grep -qi acer <<<"$VENDOR"; then
         rm -rf /tmp/acer-wmi-battery
         OK "battery health mode installed (limit 80%)"
     else
-        WARN "Acer driver build failed — see mint-setup.md Section 7"; FAILED_STEPS+=("acer battery driver")
+        WARN "Acer driver build failed — see mint-setup.md Section 2B"; FAILED_STEPS+=("acer battery driver")
     fi
 else
     STEP "Vendor: $VENDOR — not an Acer, skipping battery driver"

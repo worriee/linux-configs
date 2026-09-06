@@ -233,10 +233,183 @@ Verify: `source ~/.bashrc && echo $NODE_OPTIONS` → `--max-old-space-size=1536`
 | **EarlyOOM**            | _none_  | `active`  | Kills memory-hog Brave first — protects zed/opencode/kitty sessions.      |
 | **ModemManager**        | `enabled` | `disabled` | Removes unneeded modem daemon (Wi-Fi/Bluetooth unaffected).              |
 | **NODE_OPTIONS**        | _none_  | `1536MB`  | Caps Node heap so opencode/npm builds can't exhaust 8GB RAM.              |
+| **MT7902 driver** _(optional)_ | _none_ | `DKMS auto` | Wi-Fi + BT work on MediaTek 7902 cards; auto-rebuilds per kernel update.  |
+| **Acer battery health** _(optional)_ | _none_ | `80% cap` | Doubles battery lifespan by capping charge at 80% (Acer laptops only).    |
 
 ---
 
-## 2. Keyboard Shortcuts & Window Manager Keybinds
+## 2. OPTIONAL — Hardware-Specific Drivers (Auto-Detected)
+
+Both drivers below are **laptop-specific extras** — skip this entire section on any machine that doesn't need them. Each subsection detects its own hardware and states exactly when it applies.
+
+- **2A** applies only if the laptop has the **MediaTek MT7902** Wi-Fi/Bluetooth card.
+- **2B** applies only to **Acer** laptops.
+
+### 2A. MT7902 Wi-Fi + Bluetooth Driver — MEDIATEK 7902 CARD ONLY
+
+#### What This Does
+
+The MediaTek MT7902 card (`lspci`: `Network controller: MEDIATEK Corp. Device 7902`) has no in-kernel driver on Mint 22.3 (kernel 7.0), so Wi-Fi and Bluetooth don't work out of the box. This installs the out-of-tree `mt7902e` (Wi-Fi, an `mt76` fork) and `btusb_mt7902` (Bluetooth) drivers via **DKMS**, which rebuilds them automatically on every kernel update.
+
+> **Skip this if Wi-Fi already works** — check `nmcli device` first. Kernel 7.1+ includes official MT7902 support; if you run one, remove this driver instead (see Deprecation Note below).
+
+Sources are vendored in this repo (`drivers/mt7902/`), pinned to the upstream branches used on this machine:
+
+- Wi-Fi: `hmtheboy154/mt7902`, branch `backport` @ `681d1159`
+- Bluetooth: `hmtheboy154/mt7902`, branch `bluetooth_backport` @ `2988629c`
+
+#### Step-by-Step
+
+1. Detect the card — if nothing matches, skip this subsection:
+
+```bash
+lspci -nn | grep -i 14c3
+```
+
+_(Expected: `02:00.0 Network controller [0280]: MEDIATEK Corp. Device 7902 [14c3:7902]`)_
+
+2. Install build prerequisites:
+
+```bash
+sudo apt update && sudo apt install -y build-essential linux-headers-$(uname -r) dkms
+```
+
+3. Restore the vendored sources from the repo into `/usr/src` (DKMS's build directory):
+
+```bash
+sudo cp -r drivers/mt7902/mt7902-wifi /usr/src/mt7902-wifi-1.0
+sudo cp -r drivers/mt7902/mt7902-bt   /usr/src/mt7902-bt-1.0
+```
+
+4. Register both with DKMS — this builds and installs the modules:
+
+```bash
+sudo dkms install -m mt7902-wifi -v 1.0
+sudo dkms install -m mt7902-bt -v 1.0
+```
+
+_(`dkms install` runs `add` + `build` + `install` in one step. `AUTOINSTALL="yes"` in each `dkms.conf` makes future kernel updates rebuild both modules automatically — verified across a `7.0.0-30` → `7.0.0-31` update.)_
+
+5. Install the firmware blobs — DKMS does **not** do this; each Makefile has a separate `install_fw` target:
+
+```bash
+sudo make -C /usr/src/mt7902-wifi-1.0 install_fw
+sudo make -C /usr/src/mt7902-bt-1.0 install_fw
+```
+
+6. Reboot, then verify:
+
+```bash
+dkms status | grep 7902        # both entries "installed" for your kernel
+lsmod | grep 7902              # mt7902e + btusb_mt7902 loaded
+nmcli device                   # Wi-Fi + Bluetooth visible
+```
+
+#### Deprecation Note (kernel 7.1+)
+
+Upstream recommends switching to the official in-kernel MT7902 driver once your kernel is 7.1 or newer. Remove the out-of-tree driver:
+
+```bash
+sudo dkms remove -m mt7902-wifi -v 1.0 --all
+sudo dkms remove -m mt7902-bt -v 1.0 --all
+sudo make -C /usr/src/mt7902-wifi-1.0 uninstall_fw
+sudo make -C /usr/src/mt7902-bt-1.0 uninstall_fw
+sudo rm -rf /usr/src/mt7902-wifi-1.0 /usr/src/mt7902-bt-1.0
+```
+
+### 2B. Acer Battery Health Mode (80% Charge Limit) — ACER LAPTOPS ONLY
+
+#### What This Does
+
+Replicates the **80% Battery Charge Limit** from Acer Care Center on Windows using the open-source `acer-wmi-battery` driver. **Skip this subsection entirely on non-Acer laptops** — the WMI interface does not exist on other brands.
+
+> **Current state (this machine):** driver is installed and loading at boot, but the charge limit is currently **off (`health_mode` = 0, full 100%)** by choice. To re-enable the 80% limit, run the `batt80` alias (see Manual Control below).
+
+> Source: https://github.com/frederik-h/acer-wmi-battery
+
+#### Prerequisites
+
+```bash
+sudo apt update
+sudo apt install -y build-essential linux-headers-$(uname -r) git
+```
+
+- `build-essential` — gcc, make, and system libraries for compiling kernel modules.
+- `linux-headers-$(uname -r)` — header files matching the running kernel so the module compiles cleanly.
+
+#### Build and Install the Module
+
+```bash
+cd ~
+git clone https://github.com/frederik-h/acer-wmi-battery.git
+cd acer-wmi-battery
+make
+
+sudo mkdir -p /lib/modules/$(uname -r)/kernel/drivers/platform/x86/
+sudo cp acer-wmi-battery.ko /lib/modules/$(uname -r)/kernel/drivers/platform/x86/
+sudo depmod -a
+sudo modprobe acer-wmi-battery
+```
+
+- `make` — compiles `acer-wmi-battery.c` into `acer-wmi-battery.ko`.
+- `depmod -a` — updates module dependencies so modprobe finds the driver by name.
+- `modprobe acer-wmi-battery` — loads the driver into the running kernel.
+
+#### Load Automatically on Boot
+
+```bash
+echo "acer-wmi-battery" | sudo tee /etc/modules-load.d/acer-wmi-battery.conf
+echo "options acer-wmi-battery enable_health_mode=1" | sudo tee /etc/modprobe.d/acer-wmi-battery.conf
+```
+
+- `modules-load.d` — systemd loads the driver at every boot.
+- `modprobe.d` — passes `enable_health_mode=1`, so the 80% limit is applied automatically at startup.
+
+#### Manual Control and Status
+
+```bash
+# Check current mode (1 = 80% limit active, 0 = full 100%)
+cat /sys/bus/wmi/drivers/acer-wmi-battery/health_mode
+
+# Enable 80% charge limit
+echo 1 | sudo tee /sys/bus/wmi/drivers/acer-wmi-battery/health_mode
+
+# Allow full 100% charge
+echo 0 | sudo tee /sys/bus/wmi/drivers/acer-wmi-battery/health_mode
+```
+
+#### Add them in .bashrc file for shortcut commands (Optional)
+
+```bash
+# Acer Battery Control Aliases
+# Limit charging threshold to 80%
+alias batt80='echo 1 | sudo tee /sys/bus/wmi/drivers/acer-wmi-battery/health_mode'
+
+# Allow charging threshold up to 100%
+alias batt100='echo 0 | sudo tee /sys/bus/wmi/drivers/acer-wmi-battery/health_mode'
+
+# Check active charging mode
+alias battstat='cat /sys/bus/wmi/drivers/acer-wmi-battery/health_mode'
+```
+
+- `batt80` — cap charging at 80%.
+- `batt100` — allow full 100% charge.
+- `battstat` — show current mode (`1` or `0`).
+
+#### Kernel Update Maintenance
+
+The module is compiled against the active kernel, so after a major kernel update you must recompile:
+
+```bash
+cd ~/acer-wmi-battery
+make clean
+make
+sudo cp acer-wmi-battery.ko /lib/modules/$(uname -r)/kernel/drivers/platform/x86/
+sudo depmod -a
+sudo modprobe acer-wmi-battery
+```
+
+## 3. Keyboard Shortcuts & Window Manager Keybinds
 
 Custom shortcuts captured from current Mint XFCE setup (stored in `~/.config/xfce4/xfconf/xfce-perchannel-xml/xfce4-keyboard-shortcuts.xml`). Recreate these on the new laptop.
 
@@ -298,9 +471,9 @@ Alternatively, re-add them manually via **Settings → Keyboard → Application 
 
 ---
 
-## 3. No-Reboot Reset & System Cleanup
+## 4. No-Reboot Reset & System Cleanup
 
-### 3A. Restart the Entire Desktop Session (Closest to a Full Reboot)
+### 4A. Restart the Entire Desktop Session (Closest to a Full Reboot)
 
 Kills the graphical session, logs you out, restarts the display manager, and clears loaded desktop memory — without touching the kernel or power state.
 
@@ -310,7 +483,7 @@ sudo systemctl restart lightdm
 
 **Warning: Save your work first.** Restarting LightDM terminates your current session, so unsaved work in editors or browsers will be lost.
 
-### 3B. Flush the Compressed ZRAM Pool & Restart the Desktop Session (Combined)
+### 4B. Flush the Compressed ZRAM Pool & Restart the Desktop Session (Combined)
 
 Flushes the compressed ZRAM pool and immediately restarts the desktop session. Restarts the zram daemon first, then lightdm so zram swap and the swapfile re-initialize cleanly — a plain `systemctl restart zramswap` alone would leave swap disabled.
 
@@ -327,7 +500,7 @@ alias fresh='(sudo systemctl restart zramswap 2>/dev/null || sudo systemctl rest
 - `zramswap` restarts the ZRAM daemon (fallback unit name `zram-config` on older/other distros), then `lightdm` restarts the whole desktop session.
 - **Warning: Save your work first.** LightDM kills the session.
 
-### 3C. Restart Only the XFCE Desktop & Panel (Keeps Apps Open)
+### 4C. Restart Only the XFCE Desktop & Panel (Keeps Apps Open)
 
 Reloads the interface without losing open browser tabs or terminal windows. Fixes frozen panel, glitchy UI, or stale theme.
 
@@ -338,7 +511,7 @@ xfce4-panel -r && xfwm4 --replace &
 - `xfce4-panel -r` reloads the taskbar, tray icons, and widgets.
 - `xfwm4 --replace` restarts the window manager to fix stutters, borders, or compositor lag.
 
-### 3D. Clear RAM & Buffer Cache (Memory Refresh)
+### 4D. Clear RAM & Buffer Cache (Memory Refresh)
 
 Gets a fresh-boot-like memory state after closing heavy applications.
 
@@ -348,7 +521,7 @@ sudo sync && echo 3 | sudo tee /proc/sys/vm/drop_caches
 
 Writes pending data to disk (`sync`), then flushes pagecache, dentries, and inodes to free memory immediately.
 
-### 3E. Restart the Network Stack (Wi-Fi & Bluetooth)
+### 4E. Restart the Network Stack (Wi-Fi & Bluetooth)
 
 Fixes Wi-Fi or Bluetooth that stopped responding, without rebooting.
 
@@ -356,7 +529,7 @@ Fixes Wi-Fi or Bluetooth that stopped responding, without rebooting.
 sudo systemctl restart NetworkManager
 ```
 
-### 3F. Remove Unused Packages & Their Config Files (One Command)
+### 4F. Remove Unused Packages & Their Config Files (One Command)
 
 Removes orphaned dependencies, packages with leftover config files (`rc` status), clears the apt cache, and drops unused Flatpak runtimes:
 
@@ -373,7 +546,7 @@ What each part does:
 
 ---
 
-## 4. Application Autostart Configuration
+## 5. Application Autostart Configuration
 
 Location in system: **Settings** → **Session and Startup** → **Application Autostart**
 
@@ -455,7 +628,7 @@ _(Adjust `linux-configs/` to wherever this repo lives on the new laptop)_
 
 ---
 
-## 5. XFCE Panel Styling (Rounded Corners & Transparent Buttons)
+## 6. XFCE Panel Styling (Rounded Corners & Transparent Buttons)
 
 ### Edit the GTK User Stylesheet
 
@@ -515,7 +688,7 @@ xfce4-panel -r
 
 ---
 
-## 6. Login Screen UI (Slick-Greeter Top-Right Minimal)
+## 7. Login Screen UI (Slick-Greeter Top-Right Minimal)
 
 Configures the default Mint login screen (slick-greeter) to show **only** the battery percentage and a full date + 12-hour clock, both in the top-right corner (order: battery → date → time). Everything else in the top panel is hidden.
 
@@ -570,98 +743,6 @@ sudo systemctl restart lightdm
 ```
 
 _(This logs you out — save your work first.)_
-
----
-
-## 7. Acer Battery Health Mode (80% Charge Limit) — ACER LAPTOPS ONLY
-
-Replicates the **80% Battery Charge Limit** from Acer Care Center on Windows using the open-source `acer-wmi-battery` driver. **Skip this section entirely on non-Acer laptops** — the WMI interface does not exist on other brands.
-
-> **Current state (this machine):** driver is installed and loading at boot, but the charge limit is currently **off (`health_mode` = 0, full 100%)** by choice. To re-enable the 80% limit, run the `batt80` alias (see Manual Control below).
-
-> Source: https://github.com/frederik-h/acer-wmi-battery
-
-### Prerequisites
-
-```bash
-sudo apt update
-sudo apt install -y build-essential linux-headers-$(uname -r) git
-```
-
-- `build-essential` — gcc, make, and system libraries for compiling kernel modules.
-- `linux-headers-$(uname -r)` — header files matching the running kernel so the module compiles cleanly.
-
-### Build and Install the Module
-
-```bash
-cd ~
-git clone https://github.com/frederik-h/acer-wmi-battery.git
-cd acer-wmi-battery
-make
-
-sudo mkdir -p /lib/modules/$(uname -r)/kernel/drivers/platform/x86/
-sudo cp acer-wmi-battery.ko /lib/modules/$(uname -r)/kernel/drivers/platform/x86/
-sudo depmod -a
-sudo modprobe acer-wmi-battery
-```
-
-- `make` — compiles `acer-wmi-battery.c` into `acer-wmi-battery.ko`.
-- `depmod -a` — updates module dependencies so modprobe finds the driver by name.
-- `modprobe acer-wmi-battery` — loads the driver into the running kernel.
-
-### Load Automatically on Boot
-
-```bash
-echo "acer-wmi-battery" | sudo tee /etc/modules-load.d/acer-wmi-battery.conf
-echo "options acer-wmi-battery enable_health_mode=1" | sudo tee /etc/modprobe.d/acer-wmi-battery.conf
-```
-
-- `modules-load.d` — systemd loads the driver at every boot.
-- `modprobe.d` — passes `enable_health_mode=1`, so the 80% limit is applied automatically at startup.
-
-### Manual Control and Status
-
-```bash
-# Check current mode (1 = 80% limit active, 0 = full 100%)
-cat /sys/bus/wmi/drivers/acer-wmi-battery/health_mode
-
-# Enable 80% charge limit
-echo 1 | sudo tee /sys/bus/wmi/drivers/acer-wmi-battery/health_mode
-
-# Allow full 100% charge
-echo 0 | sudo tee /sys/bus/wmi/drivers/acer-wmi-battery/health_mode
-```
-
-### Add them in .bashrc file for shortcut commands (Optional)
-
-```bash
-# Acer Battery Control Aliases
-# Limit charging threshold to 80%
-alias batt80='echo 1 | sudo tee /sys/bus/wmi/drivers/acer-wmi-battery/health_mode'
-
-# Allow charging threshold up to 100%
-alias batt100='echo 0 | sudo tee /sys/bus/wmi/drivers/acer-wmi-battery/health_mode'
-
-# Check active charging mode
-alias battstat='cat /sys/bus/wmi/drivers/acer-wmi-battery/health_mode'
-```
-
-- `batt80` — cap charging at 80%.
-- `batt100` — allow full 100% charge.
-- `battstat` — show current mode (`1` or `0`).
-
-### Kernel Update Maintenance
-
-The module is compiled against the active kernel, so after a major kernel update you must recompile:
-
-```bash
-cd ~/acer-wmi-battery
-make clean
-make
-sudo cp acer-wmi-battery.ko /lib/modules/$(uname -r)/kernel/drivers/platform/x86/
-sudo depmod -a
-sudo modprobe acer-wmi-battery
-```
 
 ---
 
@@ -728,7 +809,7 @@ xfconf-query -c xfce4-keyboard-shortcuts -p "/commands/custom/<Super>r" -n -t st
 
 ## 9. Kitty Terminal + Starship Powerline Prompt
 
-Installs the Kitty GPU-accelerated terminal and the Starship prompt engine, with JetBrains Mono typography, picom frosted-glass transparency, Gruvbox Dark Soft colors, and a single-line Powerline arrow prompt. `Super+Return` opens Kitty (already in the keybinds file, Section 2).
+Installs the Kitty GPU-accelerated terminal and the Starship prompt engine, with JetBrains Mono typography, picom frosted-glass transparency, Gruvbox Dark Soft colors, and a single-line Powerline arrow prompt. `Super+Return` opens Kitty (already in the keybinds file, Section 3).
 
 ### 9A. Install Kitty Terminal
 

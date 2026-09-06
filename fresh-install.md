@@ -25,9 +25,9 @@ Type your sudo password when prompted (once). That's it.
 | 3. Dotfiles | Copies `.config/` (xfce4 keybinds, autostart, gtk-3.0, rofi, kitty, starship.toml, fastfetch, picom, zed, opencode), `.bashrc` (aliases: `fresh`, batt80/100/stat), `.themes/` (Gruvbox), `.icons/` (WhiteSur), fonts → `fc-cache -f` |
 | 4. Login screen | Wallpaper → `/usr/share/backgrounds/background.jpg`, writes `/etc/lightdm/slick-greeter.conf` (top-right: battery + full date, 12h clock only) |
 | 5. System tweaks | `vm.swappiness=180` + `vm.page-cluster=0` (zram pairing), kernel VM tuning (`vfs_cache_pressure=125`, dirty ratios 10/5, watermark 0/150), EarlyOOM guard (protects zed/opencode/kitty, prefers killing Brave), ModemManager disabled, `GRUB_TIMEOUT=5` + `update-grub`, ext4 reserved blocks → 1% (auto-detects root device), ZRAM swap (`zstd`, 100% RAM, idempotent) |
-| 6. Acer battery | Only if the machine is an Acer (auto-detected via `/sys/class/dmi/id/sys_vendor`): builds + installs `acer-wmi-battery` with 80% charge limit, autoloading on boot. Non-Acer: silently skipped |
+| 6. Optional drivers | Auto-detected extras: **MT7902 Wi-Fi/BT** (only if the `14c3:7902` PCIe card is present — restores vendored sources from `drivers/mt7902/`, builds via DKMS, installs firmware) and **Acer battery** (only if `/sys/class/dmi/id/sys_vendor` is Acer — builds `acer-wmi-battery` with 80% charge limit, autoloading on boot). Anything else: skipped |
 
-Keybinds included in the dotfiles copy: `Super+B` → Brave, `Super+R` → Rofi launcher, `Super+Return` → Kitty terminal, `Super+Alt+B` → screen dim toggle, plus everything in `mint-setup.md` Section 2.
+Keybinds included in the dotfiles copy: `Super+B` → Brave, `Super+R` → Rofi launcher, `Super+Return` → Kitty terminal, `Super+Alt+B` → screen dim toggle, plus everything in `mint-setup.md` Section 3.
 
 Safety notes:
 
@@ -90,7 +90,8 @@ starship --version
 | `Super+R` opens nothing | Log out/in once — xfconf reloads keybinds at session start |
 | Login screen shows wrong wallpaper | Check `/usr/share/backgrounds/background.jpg` exists; re-run `setup.sh` step 4 |
 | Rofi icons missing | Your icon theme name differs — edit `icon-theme` in `~/.config/rofi/launchers/type-3/style-3.rasi` |
-| Acer: `modprobe` failed | Reboot — the module autoloads via `/etc/modules-load.d/`; recompiles needed after kernel updates (see `mint-setup.md` Section 7) |
+| Acer: `modprobe` failed | Reboot — the module autoloads via `/etc/modules-load.d/`; recompiles needed after kernel updates (see `mint-setup.md` Section 2B) |
+| MT7902 machine: Wi-Fi/BT dead | Only for MediaTek 7902 cards — driver needs kernel headers + DKMS rebuild; check `dkms status` and `lsmod | grep 7902` (see `mint-setup.md` Section 2A) |
 | Script step failed | Re-run `bash setup.sh` — steps are idempotent; or apply manually from `mint-setup.md` |
 
 ---

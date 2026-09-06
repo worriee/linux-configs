@@ -8,10 +8,11 @@ Just a backup of my mint xfce setup incase of any worse cases. Most are AI gener
 | ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
 | `setup.sh`              | One-command restore script for a fresh Mint XFCE install (see `fresh-install.md`)                                                          |
 | `fresh-install.md`      | Instructions for the one-command fresh install                                                                                             |
-| `mint-setup.md`         | Post-install guide: performance tweaks, storage reclamation, keybinds, cleanup, autostart, panel styling, login screen, Acer battery, Rofi, screen dim toggle, ZRAM swap |
+| `mint-setup.md`         | Post-install guide: performance tweaks, storage reclamation, optional hardware drivers (MT7902 Wi-Fi/BT, Acer battery), keybinds, cleanup, autostart, panel styling, login screen, Rofi, screen dim toggle, ZRAM swap |
+| `drivers/mt7902/`       | Vendored source for the MediaTek MT7902 Wi-Fi + Bluetooth DKMS drivers (pinned upstream branches + firmware blobs) — installed by `setup.sh` only on machines with the card |
 | `background.jpg`        | Login screen wallpaper (used by the slick-greeter config)                                                                                  |
 | `.config/`              | Dotfiles for XFCE, rofi, kitty, fastfetch, autostart, gtk-3.0, picom, opencode, Zed, and Starship                                          |
-| `.config/xfce4/`        | XFCE keyboard shortcut configuration (Super+B Brave, Super+R Rofi, Super+Return Kitty, and the rest of Section 2)                          |
+| `.config/xfce4/`        | XFCE keyboard shortcut configuration (Super+B Brave, Super+R Rofi, Super+Return Kitty, and the rest of Section 3)                          |
 | `.config/rofi/`         | Rofi Type-3 launcher (Gruvbox palette, WhiteSur icons) + config                                                                            |
 | `.config/kitty/`        | Kitty terminal config (JetBrains Mono, picom blur opacity, audio bell muted) + Gruvbox Dark Soft theme                                     |
 | `.config/starship.toml` | Starship prompt config (single-line Gruvbox Powerline arrows)                                                                              |
@@ -36,6 +37,6 @@ One command (details in `fresh-install.md`):
 sudo apt install -y git && git clone --depth=1 https://github.com/worriee/linux-configs.git && cd linux-configs && bash setup.sh
 ```
 
-It copies all dotfiles/themes/icons/fonts, applies system tweaks (swappiness, kernel VM tuning, EarlyOOM guard, ModemManager disable, GRUB timeout, ext4 reserve, ZRAM compressed swap, screen dim toggle), configures the slick-greeter login screen, and auto-detects Acer laptops for the battery health driver. Manual leftovers (Brave, Zed) are listed in `fresh-install.md`.
+It copies all dotfiles/themes/icons/fonts, applies system tweaks (swappiness, kernel VM tuning, EarlyOOM guard, ModemManager disable, GRUB timeout, ext4 reserve, ZRAM compressed swap, screen dim toggle), configures the slick-greeter login screen, and auto-detects optional hardware — MT7902 Wi-Fi/BT drivers and Acer laptops for the battery health driver. Manual leftovers (Brave, Zed) are listed in `fresh-install.md`.
 
 Prefer doing it manually? Follow `mint-setup.md` section by section.
