@@ -2,19 +2,75 @@
 
 ## 0. Last Synchronized Checkpoint
 
-- **Last AI Analysis Timestamp**: September 05, 2026, 09:46 AM PST
+- **Last AI Analysis Timestamp**: September 09, 2026, 04:02 PM PST
 
 ## 1. Active & Open Review Findings
 
 _All six reviews from the September 05, 2026 full-repo audit are resolved — migrated to Section 2._
 
----
+_Reviews REVIEW-012–018 (TW-readiness audit, September 09, 2026) all fixed the same day — migrated to Section 2._
 
 ## 2. Historical & Resolved Reviews
 
 _Move reviews to this section once they are completely verified as resolved. This serves as historical memory to prevent the AI from re-introducing the same issues._
 
 > STRICT RULE: When a review finding in Section 1 is remediated, the AI MUST migrate it to this section within the SAME response using `### [RESOLVED] Short Review Description (REVIEW-XXX)`. All headers in this file are IMMUTABLE. Existing resolved entries MUST NOT be deleted, truncated, or rewritten. New resolved entries are prepended (LIFO) directly under the Section 2 header. The original REVIEW-XXX tracking number MUST be preserved in the resolved header. Failure to migrate immediately is a CRITICAL VIOLATION.
+
+### [RESOLVED] snapper snapshot per re-run (REVIEW-018)
+
+- **The Issue**: Every re-run minted a `pre-dotfiles` snapshot, littering `snapper list`.
+- **The Resolution**: Description date-tagged: `snapper create -d "pre-dotfiles $(date +%Y-%m-%d)"` (September 09, 2026, 04:02 PM PST).
+- **Prevention Strategy**: Snapshot descriptions must carry dates.
+
+---
+
+### [RESOLVED] btrfs root printed misleading ext4 WARN (REVIEW-017)
+
+- **The Issue**: On btrfs, findmnt SOURCE carries `[/@]`, lsblk failed, every TW run printed a scary "not ext4 — skipped" warning.
+- **The Resolution**: Step rewritten — strips `[...]` suffix, explicit btrfs branch prints OK "reserve step N/A (snapper covers rollback)", ext4 branch unchanged (September 09, 2026, 04:02 PM PST).
+- **Prevention Strategy**: Fstype checks must name btrfs explicitly; never infer from lsblk failure.
+
+---
+
+### [RESOLVED] pkg_sync() dead code removed (REVIEW-016)
+
+- **The Issue**: `pkg_sync()` defined but step 2 inlined sync inside the run_step subshell; never called.
+- **The Resolution**: Function deleted; `pkg_in()` retained and used (September 09, 2026, 04:02 PM PST).
+- **Prevention Strategy**: Grep for callers before adding shell helpers.
+
+---
+
+### [RESOLVED] xrandr dep declared on TW (REVIEW-015)
+
+- **The Issue**: Dim-toggle script needs xrandr at keypress time; TW XFCE pattern might not ship it.
+- **The Resolution**: `xrandr` added to TW zypper pkg list + dry-check loop (September 09, 2026, 04:02 PM PST).
+- **Prevention Strategy**: Runtime deps of generated scripts must be install-time packages.
+
+---
+
+### [RESOLVED] curl installed on both distros (REVIEW-014)
+
+- **The Issue**: Starship/Brave/Zed steps pipe `curl`; Mint pre-installs it, TW XFCE might not.
+- **The Resolution**: `curl` added to apt list and TW zypper list + dry-check loop (September 09, 2026, 04:02 PM PST).
+- **Prevention Strategy**: Never assume fetch tools; declare them.
+
+---
+
+### [RESOLVED] ZRAM moved to verified zram-generator flow (REVIEW-013)
+
+- **The Issue**: Config targeted /etc/systemd/zram-generator.conf with no guarantee the mechanism existed; fallbacks enabled unknown defaults silently.
+- **The Resolution**: Web-verified (upstream systemd/zram-generator + TW forum Jan 2026 + SLES docs): TW pkg list now installs `zram-generator` (replacing `systemd-zram-service`), writes `[zram0] zram-size = min(ram)` + `compression-algorithm = zstd`, parks legacy `zramswap`, daemon-reload + enable `systemd-zram-setup@zram0` + start `dev-zram0.swap`, and ASSERTS post-state via `zramctl` (zstd active → OK; else FAILED_STEPS "zram verify"). TW `fresh` alias + fresh-install/docs updated to `dev-zram0.swap` (September 09, 2026, 04:02 PM PST).
+- **Prevention Strategy**: Swap setup must assert via zramctl/swapon, never assume from config files.
+
+---
+
+### [RESOLVED] EarlyOOM guard uses policy signature (REVIEW-012)
+
+- **The Issue**: `grep -q EARLYOOM_ARGS` matched vendor templates (TW fillup sysconfig VERIFIED to ship uncommented SUSE-default EARLYOOM_ARGS via OBS), so our avoid-zed/prefer-brave policy would silently never apply.
+- **The Resolution**: Guard changed to `grep -qF "brave-browser"` — matches only our policy, both distros (September 09, 2026, 04:02 PM PST).
+- **Prevention Strategy**: Idempotency guards must match our signature, never generic variable names.
+
+---
 
 ### [RESOLVED] Kitty doc heredoc synced with live config (REVIEW-011)
 
@@ -106,12 +162,12 @@ _Move reviews to this section once they are completely verified as resolved. Thi
 
 ## 3. Review Summary Metrics
 
-- **Total Reviews Conducted**: 2
+- **Total Reviews Conducted**: 3
 - **Critical Findings**: 0
-- **High Findings**: 4
-- **Medium Findings**: 3
-- **Low Findings**: 4
-- **Last Review Date**: `September 05, 2026, 09:46 AM PST`
+- **High Findings**: 6
+- **Medium Findings**: 4
+- **Low Findings**: 8
+- **Last Review Date**: `September 09, 2026, 04:02 PM PST`
 
 ---
 

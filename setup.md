@@ -1,8 +1,17 @@
-# Linux Mint XFCE Post-Install System Optimizations
+# Linux Mint XFCE Post-Install System Optimizations (XFCE-only)
 
-Seven performance, storage and service optimizations for Linux Mint on laptops with SSDs and 8GB–16GB RAM, tuned for a coding-heavy workflow (Zed, opencode, Node, Kitty). Applies to any edition (Cinnamon, XFCE, MATE) — none of these are desktop-environment specific.
+Seven performance, storage and service optimizations for Linux Mint XFCE on laptops with SSDs and 8GB–16GB RAM, tuned for a coding-heavy workflow (Zed, opencode, Node, Kitty). XFCE-only — does not apply to other desktops.
 
 Run in this order after a fresh install.
+
+---
+
+## 0. Support scope (read first)
+
+- XFCE-only: this repo automates XFCE customizations. Other desktops are not supported; `setup.sh` aborts off-XFCE.
+- Mint / Ubuntu (apt): full flow, including the GRUB-timeout step and `zram-tools` (`/etc/default/zramswap`).
+- openSUSE Tumbleweed XFCE (zypper): same script, branched — `zram-generator` instead of `zram-tools`, `/etc/sysconfig/earlyoom`, slick-greeter via `lightdm-slick-greeter` + `update-alternatives`, GRUB step skipped (bootloader untouched), btrfs root auto-skips the ext4 reserve step, snapper `pre-dotfiles` snapshot.
+- Older prose below may predate the XFCE-only scope; this section is authoritative.
 
 ---
 
