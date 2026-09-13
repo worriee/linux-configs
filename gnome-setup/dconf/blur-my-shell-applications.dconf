@@ -1,0 +1,9 @@
+[/]
+blur=true
+corner-when-maximized=true
+dynamic-opacity=false
+enable-all=true
+opacity=199
+pipeline='pipeline_default'
+sigma=30
+static-blur=true

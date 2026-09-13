@@ -1,0 +1,6 @@
+[/]
+brightness=0.59999999999999998
+corner-radius=0
+pipeline='pipeline_default'
+sigma=30
+static-blur=false

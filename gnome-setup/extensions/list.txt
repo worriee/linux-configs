@@ -1,0 +1,3 @@
+blur-my-shell@aunetx
+dash-to-panel@jderose9.github.com
+disable-workspace-switcher@jbradaric.me
