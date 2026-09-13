@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # setup.sh — One-command restore of this dotfiles repo onto a fresh XFCE install (XFCE-only).
-# Run from inside the cloned repo:  bash setup.sh
-# Full instructions: fresh-install.md
+# Run from inside the cloned repo:  bash xfce-setup/setup.sh
+# Full instructions: xfce-setup/fresh-install.md
 
 set -u
 
@@ -133,10 +133,10 @@ unset _FRESH_LINE
 STEP "Copying dotfiles, themes, icons, fonts"
 mkdir -p "$HOME_DIR/.config" "$HOME_DIR/.local/share/fonts" "$HOME_DIR/.themes" "$HOME_DIR/.icons"
 # -b: back up any pre-existing file as <name>~
-cp -rb "$REPO/.config/." "$HOME_DIR/.config/"
-cp -rb "$REPO/.themes/." "$HOME_DIR/.themes/"
-cp -rb "$REPO/.icons/." "$HOME_DIR/.icons/"
-cp -rb "$REPO/.local/share/fonts/." "$HOME_DIR/.local/share/fonts/"
+[ -d "$REPO/.config" ] && cp -rb "$REPO/.config/." "$HOME_DIR/.config/" || WARN "$REPO/.config missing — skipped"
+[ -d "$REPO/.themes" ] && cp -rb "$REPO/.themes/." "$HOME_DIR/.themes/" || WARN "$REPO/.themes missing — skipped"
+[ -d "$REPO/.icons" ] && cp -rb "$REPO/.icons/." "$HOME_DIR/.icons/" || WARN "$REPO/.icons missing — skipped"
+[ -d "$REPO/.local/share/fonts" ] && cp -rb "$REPO/.local/share/fonts/." "$HOME_DIR/.local/share/fonts/" || WARN "fonts missing — skipped"
 fc-cache -f >/dev/null 2>&1
 OK "dotfiles + fonts applied (backups: <file>~)"
 
@@ -172,8 +172,12 @@ fi
 # 4. Login screen — slick-greeter (sudo)
 # ------------------------------------------------
 STEP "Login screen (slick-greeter)"
-sudo mkdir -p /usr/share/backgrounds
-sudo cp "$REPO/background.jpg" /usr/share/backgrounds/background.jpg && OK "wallpaper -> /usr/share/backgrounds/background.jpg"
+if [ -f "$REPO/background.jpg" ]; then
+    sudo mkdir -p /usr/share/backgrounds
+    sudo cp "$REPO/background.jpg" /usr/share/backgrounds/background.jpg && OK "wallpaper -> /usr/share/backgrounds/background.jpg"
+else
+    WARN "$REPO/background.jpg missing — wallpaper skipped (see setup.md Section 7)"; FAILED_STEPS+=("wallpaper missing")
+fi
 sudo tee /etc/lightdm/slick-greeter.conf >/dev/null <<'EOF'
 [Greeter]
 background=/usr/share/backgrounds/background.jpg
@@ -423,9 +427,13 @@ else
     echo "   GRUB timeout  : applies at next reboot"
 fi
 echo
-read -rp "Restart the login screen now? (logs you out!) [y/N] " ans
-if [ "${ans:-n}" = y ]; then
-    if [ "$DISTRO" = "opensuse" ]; then sudo systemctl restart display-manager
-    else sudo systemctl restart lightdm; fi
+if [ -t 0 ]; then
+    read -rp "Restart the login screen now? (logs you out!) [y/N] " ans
+    if [ "${ans:-n}" = y ]; then
+        if [ "$DISTRO" = "opensuse" ]; then sudo systemctl restart display-manager
+        else sudo systemctl restart lightdm; fi
+    fi
+else
+    echo "Non-interactive shell — restart skipped (run manually)."
 fi
 exit 0

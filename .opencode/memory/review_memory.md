@@ -6,6 +6,8 @@
 
 ## 1. Active & Open Review Findings
 
+_All eight reviews REVIEW-019–026 (split-layout audit, September 13, 2026) fixed the same day — migrated to Section 2._
+
 _All six reviews from the September 05, 2026 full-repo audit are resolved — migrated to Section 2._
 
 _Reviews REVIEW-012–018 (TW-readiness audit, September 09, 2026) all fixed the same day — migrated to Section 2._
@@ -15,6 +17,68 @@ _Reviews REVIEW-012–018 (TW-readiness audit, September 09, 2026) all fixed the
 _Move reviews to this section once they are completely verified as resolved. This serves as historical memory to prevent the AI from re-introducing the same issues._
 
 > STRICT RULE: When a review finding in Section 1 is remediated, the AI MUST migrate it to this section within the SAME response using `### [RESOLVED] Short Review Description (REVIEW-XXX)`. All headers in this file are IMMUTABLE. Existing resolved entries MUST NOT be deleted, truncated, or rewritten. New resolved entries are prepended (LIFO) directly under the Section 2 header. The original REVIEW-XXX tracking number MUST be preserved in the resolved header. Failure to migrate immediately is a CRITICAL VIOLATION.
+
+### [RESOLVED] Stale duplicate docs (REVIEW-026)
+
+- **The Issue**: Map listed old root `background.jpg`, `fresh-install.md`, `mint-setup.md`; no GNOME entrypoint pointer.
+- **The Resolution**: `codebase_map.md` tree + table rewritten to split layout (`xfce-setup/` + `gnome-setup/` with dconf/extensions/assets rows); timestamp September 13, 2026, 08:53 AM PST. Verified via read-back.
+- **Prevention Strategy**: Refresh map on every repo restructure; grep for moved filenames before closing.
+
+---
+
+### [RESOLVED] Scripts block automation, weak guards (REVIEW-025)
+
+- **The Issue**: Both scripts ended with blocking `read -rp`; XFCE bulk `cp -rb` unchecked. Breaks non-interactive runs.
+- **The Resolution**: Both tails gated on `[ -t 0 ]` with non-interactive skip note; XFCE copies split into per-dir `[ -d ]` guarded lines (September 13, 2026, 08:54 AM PST). Verified `bash -n` ok both.
+- **Prevention Strategy**: Gate every `read` on TTY; guard every bulk copy on `[ -d ]`.
+
+---
+
+### [RESOLVED] Hardcoded path rewrite incomplete (REVIEW-024)
+
+- **The Issue**: GNOME path fix covered only `opencode.jsonc`; `/home/julry` remained in `.bashrc` + dconf dump.
+- **The Resolution**: `gnome-setup/setup.sh` sed extended to `.bashrc` + `dconf/dash-to-panel.dconf` (September 13, 2026, 08:54 AM PST). Verified via grep.
+- **Prevention Strategy**: Grep repo for `/home/julry` before closing portability reviews.
+
+---
+
+### [RESOLVED] Dconf icon path mismatch assets (REVIEW-023)
+
+- **The Issue**: Dump pointed at `~/Documents/opensuse-icon.webp`; script never installed the asset.
+- **The Resolution**: New `Panel app icon` step copies `assets/opensuse-icon.webp` to `$HOME/Documents/` with `cp -b`, warns + logs `FAILED_STEPS` when missing (September 13, 2026, 08:54 AM PST). Verified `bash -n` ok.
+- **Prevention Strategy**: Every dconf-referenced absolute path needs an install step or rewrite.
+
+---
+
+### [RESOLVED] Background.jpg missing, cp unguarded (REVIEW-022)
+
+- **The Issue**: XFCE login step ran unconditional `sudo cp "$REPO/background.jpg"`; file absent on fresh clone.
+- **The Resolution**: Wrapped in `[ -f ]` guard — copies when present, else `WARN` + `FAILED_STEPS+=("wallpaper missing")` (September 13, 2026, 08:54 AM PST). Verified `bash -n` ok.
+- **Prevention Strategy**: Guard every asset `cp` on `[ -f ]`; never assume vendored media.
+
+---
+
+### [RESOLVED] Fresh-install.md misplaced (REVIEW-021)
+
+- **The Issue**: Guide lived in `.opencode/` tool dir; refs assumed sibling file.
+- **The Resolution**: Confirmed already at `xfce-setup/fresh-install.md` (move predated audit); fixed stale `bash setup.sh` refs inside to `bash xfce-setup/setup.sh` + corrected both `setup.sh` header lines to per-DE paths (September 13, 2026, 08:54 AM PST).
+- **Prevention Strategy**: Keep guides next to their scripts; fix internal command paths on move.
+
+---
+
+### [RESOLVED] One-command target missing (REVIEW-020)
+
+- **The Issue**: `bash setup.sh` at root fails post-split.
+- **The Resolution**: `xfce-setup/fresh-install.md:12,119` now `bash xfce-setup/setup.sh`; both `setup.sh` headers show per-DE commands; README shows both per-DE commands (September 13, 2026, 08:54 AM PST). Verified via grep.
+- **Prevention Strategy**: Grep for bare `bash setup.sh` after any layout split.
+
+---
+
+### [RESOLVED] README stale root layout (REVIEW-019)
+
+- **The Issue**: Table listed root-level scripts/assets; real layout is split `gnome-setup/` + `xfce-setup/`.
+- **The Resolution**: README rewritten — split scope note, per-DE table rows, two clone commands, hardened-notes paragraph; refs updated to `xfce-setup/fresh-install.md` (September 13, 2026, 08:54 AM PST). Verified all linked paths exist.
+- **Prevention Strategy**: Rewrite README table on every top-level move; verify each linked path exists.
 
 ### [RESOLVED] snapper snapshot per re-run (REVIEW-018)
 

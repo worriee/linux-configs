@@ -2,7 +2,7 @@
 
 ## 0. Last Synchronized Checkpoint
 
-- **Last AI Analysis Timestamp**: September 05, 2026, 07:57 AM PST
+- **Last AI Analysis Timestamp**: September 13, 2026, 08:53 AM PST
 
 ## 1. Visual Codebase Overview
 
@@ -13,40 +13,26 @@ _Draw the entire project directory tree and explain each folder and file in one 
 ```
 linux-configs/
 ├── AGENTS.md                       _Agent workspace configuration, instruction loading, skill modes_
-├── README.md                       _Project readme_
-├── background.jpg                  _Desktop wallpaper_
-├── fresh-install.md                _Fresh install guide_
-├── mint-setup.md                   _Mint setup guide_
+├── README.md                       _Split-layout readme (XFCE + GNOME entrypoints)_
 ├── opencode.json                   _opencode project config_
-├── setup.sh                        _Setup script_
-├── .config/                        _User app configs (dotfiles)_
-│   ├── autostart/                  _Autostart .desktop entries (Plank, updates, etc.)_
-│   ├── fastfetch/config.jsonc      _Fastfetch system info config_
-│   ├── gtk-3.0/gtk.css             _GTK3 custom CSS overrides_
-│   ├── kitty/                      _Kitty terminal configs_
-│   │   ├── current-theme.conf      _Kitty active color theme_
-│   │   └── kitty.conf              _Kitty terminal settings_
-│   ├── opencode/opencode.jsonc     _opencode global config_
-│   ├── picom/picom.conf            _picom compositor config_
-│   ├── rofi/                       _Rofi application launcher_
-│   │   ├── colors/gruvbox.rasi     _Gruvbox color scheme_
-│   │   ├── config.rasi             _Rofi main config_
-│   │   └── launchers/type-3/       _Launcher theme_
-│   ├── starship.toml               _Starship prompt config_
-│   ├── xfce4/xfconf/               _Xfce4 settings (xfconf XML)_
-│   └── zed/                        _Zed editor configs_
-│       ├── keymap.json             _custom keybindings_
-│       ├── settings.json           _editor settings_
-│       └── themes/                 _custom themes_
-├── .icons/                         _Icon themes_
-│   ├── WhiteSur-grey/              _WhiteSur grey icons + @2x symlinks_
-│   ├── WhiteSur-grey-dark/         _WhiteSur grey-dark variant_
-│   └── WhiteSur-grey-light/        _WhiteSur grey-light variant_
-├── .themes/                        _GTK themes_
-│   ├── Gruvbox-BL-LB-Dark-Soft/    _Gruvbox dark theme (gnome-shell, gtk-2/3/4, xfwm4, plank)_
-│   ├── Gruvbox-BL-LB-Dark-Soft-hdpi/ _Gruvbox dark theme hi-DPI variant_
-│   └── Gruvbox-BL-LB-Dark-Soft-xhdpi/ _Gruvbox dark theme extra-hi-DPI variant_
-├── .local/share/fonts/             _Custom fonts (7 Nerd Font + 2 regular files)_
+├── xfce-setup/                     _Mint/Ubuntu + TW XFCE backup (XFCE-only)_
+│   ├── setup.sh                    _One-command XFCE restore (per-distro branches)_
+│   ├── setup.md                    _XFCE post-install guide_
+│   ├── fresh-install.md            _XFCE one-command guide_
+│   ├── .bashrc                     _Shell aliases (fresh, batt80/100/stat), starship hook_
+│   ├── .config/                    _XFCE dotfiles (xfce4, rofi, kitty, picom, zed, opencode, fastfetch, starship)_
+│   ├── .themes/                    _Gruvbox XFCE window themes_
+│   ├── .icons/                     _WhiteSur-grey icon themes_
+│   ├── .local/share/fonts/         _Shared Nerd fonts (reused by GNOME)_
+│   └── drivers/mt7902/             _Vendored MT7902 DKMS drivers (XFCE install only)_
+├── gnome-setup/                    _openSUSE TW GNOME backup (GNOME-only)_
+│   ├── setup.sh                    _One-command GNOME restore (zypper only, GDM)_
+│   ├── setup.md                    _GNOME post-install guide_
+│   ├── .bashrc                     _TW fresh alias, starship hook, NODE_OPTIONS_
+│   ├── .config/                    _GNOME dotfiles (kitty, starship, fastfetch, opencode only)_
+│   ├── dconf/                      _Text dumps (dash-to-panel, blur-my-shell panel+apps, interface)_
+│   ├── extensions/list.txt         _Enabled extensions (3 IDs, reinstall via Extension Manager)_
+│   └── assets/opensuse-icon.webp   _Custom dash-to-panel app icon_
 └── .opencode/                      _Agent memory, rules, skills_
 ```
 
@@ -55,12 +41,16 @@ linux-configs/
 | Path | What It Does |
 |------|-------------|
 | `AGENTS.md` | _Agent workspace configuration — instruction loading, skill modes, memory locations_ |
-| `README.md` | _Project readme_ |
-| `background.jpg` | _Desktop wallpaper image_ |
-| `fresh-install.md` | _Fresh install guide — setup steps for new machine_ |
-| `mint-setup.md` | _Mint setup guide — detailed Linux Mint configuration steps_ |
+| `README.md` | _Split-layout readme — XFCE + GNOME entrypoints and restore commands_ |
+| `xfce-setup/setup.sh` | _XFCE restore script — per-distro branches, guards `[ -d ]`, non-interactive safe_ |
+| `xfce-setup/setup.md` | _XFCE post-install guide — tweaks, drivers, keybinds, login screen_ |
+| `xfce-setup/fresh-install.md` | _XFCE one-command guide — Mint/TW XFCE fresh install steps_ |
+| `gnome-setup/setup.sh` | _GNOME restore script — TW-only, GDM, dconf load, asset install, non-interactive safe_ |
+| `gnome-setup/setup.md` | _GNOME post-install guide — tunings, extensions, masks, entrypoint pointer_ |
+| `gnome-setup/dconf/` | _GNOME shell text dumps — dash-to-panel, blur-my-shell panel+apps, interface_ |
+| `gnome-setup/extensions/list.txt` | _Enabled GNOME extensions — 3 IDs, reinstall then dconf load_ |
+| `gnome-setup/assets/opensuse-icon.webp` | _Custom dash-to-panel app icon — installed to ~/Documents on restore_ |
 | `opencode.json` | _Project-level opencode configuration_ |
-| `setup.sh` | _Setup script — automates config installation_ |
 | `.config/` | _Home for all user app configs (dotfiles)_ |
 | `.config/autostart/` | _Autostart .desktop entries — auto-launch apps on login (Plank, updates, etc.)_ |
 | `.config/fastfetch/config.jsonc` | _Fastfetch config — modern neofetch replacement, system info display_ |

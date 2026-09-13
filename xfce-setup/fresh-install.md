@@ -9,7 +9,7 @@ XFCE-only: this repo automates XFCE customizations and does not work on other de
 On a fresh Mint XFCE or openSUSE TW XFCE install, open a terminal and run:
 
 ```bash
-if command -v apt >/dev/null; then sudo apt install -y git; else sudo zypper in -y git; fi && git clone --depth=1 https://github.com/worriee/linux-configs.git && cd linux-configs && bash setup.sh
+if command -v apt >/dev/null; then sudo apt install -y git; else sudo zypper in -y git; fi && git clone --depth=1 https://github.com/worriee/linux-configs.git && cd linux-configs && bash xfce-setup/setup.sh
 ```
 
 Type your sudo password when prompted (once). That's it.
@@ -116,7 +116,7 @@ update-alternatives --display lightdm-default-greeter.desktop
 | Rofi icons missing | Your icon theme name differs — edit `icon-theme` in `~/.config/rofi/launchers/type-3/style-3.rasi` |
 | Acer: `modprobe` failed | Reboot — the module autoloads via `/etc/modules-load.d/`; recompiles needed after kernel updates (see `setup.md` Section 2B) |
 | MT7902 machine: Wi-Fi/BT dead | Only for MediaTek 7902 cards — driver needs kernel headers + DKMS rebuild; check `dkms status` and `lsmod | grep 7902` (see `setup.md` Section 2A) |
-| Script step failed | Re-run `bash setup.sh` — steps are idempotent; or apply manually from `setup.md` |
+| Script step failed | Re-run `bash xfce-setup/setup.sh` — steps are idempotent; or apply manually from `setup.md` |
 
 ---
 

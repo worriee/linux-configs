@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # setup.sh — One-command restore of this dotfiles repo onto a fresh openSUSE GNOME install (GNOME-only).
-# Run from inside the cloned repo:  bash setup.sh
-# Full instructions: setup.md
+# Run from inside the cloned repo:  bash gnome-setup/setup.sh
+# Full instructions: gnome-setup/setup.md
 
 set -u
 
@@ -58,7 +58,9 @@ echo "==============================================="
 # ------------------------------------------------
 STEP "Fixing hardcoded paths (/home/julry -> $HOME_DIR)"
 sed -i "s|/home/julry|$HOME_DIR|g" \
-    "$REPO/.config/opencode/opencode.jsonc" 2>/dev/null || true
+    "$REPO/.config/opencode/opencode.jsonc" \
+    "$REPO/.bashrc" \
+    "$REPO/dconf/dash-to-panel.dconf" 2>/dev/null || true
 OK "paths rewritten"
 
 # ------------------------------------------------
@@ -139,6 +141,19 @@ else
 fi
 # Fonts live in xfce-setup/.local/share/fonts/ — not duplicated here.
 fc-cache -f >/dev/null 2>&1 || true
+
+# Panel app icon referenced by dconf/dash-to-panel.dconf (show-apps-icon-file)
+STEP "Panel app icon (opensuse-icon.webp)"
+if [ -f "$REPO/assets/opensuse-icon.webp" ]; then
+    mkdir -p "$HOME_DIR/Documents"
+    if cp -b "$REPO/assets/opensuse-icon.webp" "$HOME_DIR/Documents/opensuse-icon.webp" 2>/dev/null; then
+        OK "icon -> $HOME_DIR/Documents/opensuse-icon.webp"
+    else
+        WARN "icon copy failed"; FAILED_STEPS+=("panel icon")
+    fi
+else
+    WARN "$REPO/assets/opensuse-icon.webp missing — icon skipped"; FAILED_STEPS+=("panel icon missing")
+fi
 
 # ------------------------------------------------
 # 4. GNOME shell state (extensions + dconf + gsettings)
@@ -370,8 +385,12 @@ command -v zed >/dev/null && echo "   zed           : installed" \
 echo "   fonts         : from xfce-setup/.local/share/fonts/ (not vendored here)"
 echo "   bootloader    : untouched (by design)"
 echo
-read -rp "Restart the login screen now? (logs you out!) [y/N] " ans
-if [ "${ans:-n}" = y ]; then
-    sudo systemctl restart display-manager
+if [ -t 0 ]; then
+    read -rp "Restart the login screen now? (logs you out!) [y/N] " ans
+    if [ "${ans:-n}" = y ]; then
+        sudo systemctl restart display-manager
+    fi
+else
+    echo "Non-interactive shell — restart skipped (run manually)."
 fi
 exit 0
