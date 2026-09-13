@@ -133,3 +133,5 @@ export NODE_OPTIONS="--max-old-space-size=1536"
 
 # Flush the ZRAM compressed pool and restart the graphical desktop session
 alias fresh='sudo systemctl restart dev-zram0.swap && sudo systemctl restart display-manager' # distro-fresh-alias
+alias game='sudo /usr/sbin/sysctl -w vm.swappiness=10 >/dev/null && echo game: swappiness 10'
+alias code='sudo /usr/sbin/sysctl -w vm.swappiness=200 >/dev/null && echo code: swappiness 200'

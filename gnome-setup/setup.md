@@ -19,14 +19,14 @@ Run in this order after a fresh install.
 
 Everything the kernel, filesystem and background services need to run fast and lean on this machine — swap strategy, disk space, memory-reclaim behavior, OOM protection and dev-tooling tuning.
 
-### 1A. Swappiness + Swap Readahead (60 → 180 with ZRAM)
+### 1A. Swappiness + Swap Readahead (60 → 200 with ZRAM)
 
 #### What This Does
 
 Swappiness controls how aggressively Linux moves idle RAM pages into swap instead of keeping them in physical memory.
 
 - **Default (60):** moderate balance, tuned for slow disk swap.
-- **With ZRAM (180):** the kernel swaps idle pages aggressively into fast compressed RAM (see Section 11), freeing real RAM for apps and file cache. The SSD swapfile is only touched after zram fills up — so SSD wear goes _down_, not up.
+- **With ZRAM (200):** max aggressive — kernel swaps idle pages eagerly into fast compressed RAM (see Section 11), freeing real RAM for Brave many tabs + Zed/opencode. SSD swapfile touched only after zram fills — SSD wear _down_, not up. `game` alias drops to 10 for gaming.
 - **page-cluster (0):** controls swap readahead (pages fetched per I/O = 2^n). With zram, swap I/O is random compressed-RAM access — multi-page readahead just amplifies CPU work decompressing unused pages. `0` = one page per I/O, precise, no overfetch. Default on this kernel is already 0; setting it explicitly keeps the pairing documented.
 
 > Requires Section 11 (ZRAM) to be set up first. Without zram, keep this low (10) to protect the SSD.
@@ -36,7 +36,7 @@ Swappiness controls how aggressively Linux moves idle RAM pages into swap instea
 1. Write the drop-in and apply:
 
 ```bash
-printf "vm.swappiness=180\nvm.page-cluster=0\n" | sudo tee /etc/sysctl.d/99-swappiness.conf
+printf "vm.swappiness=200\nvm.page-cluster=0\n" | sudo tee /etc/sysctl.d/99-swappiness.conf
 sudo sysctl --system
 ```
 
@@ -47,7 +47,7 @@ cat /proc/sys/vm/swappiness
 cat /proc/sys/vm/page-cluster
 ```
 
-_(Expected output: `180` then `0`)_
+_(Expected output: `200` then `0`)_
 
 Bootloader is untouched by design on openSUSE (no GRUB-timeout step). btrfs root skips any ext4 reserve step (snapper covers rollback).
 
@@ -191,6 +191,59 @@ dconf load /org/gnome/shell/extensions/dash-to-panel/ < dconf/dash-to-panel.dcon
 
 ---
 
+## 3B. Keybindings (GNOME native, dconf only)
+
+Captured from live TW GNOME 50.4 via `dconf dump` (not `xfce4-keyboard-shortcuts.xml` like XFCE). All four dumps restore with `dconf load` — no GUI steps needed.
+
+### Custom App Shortcuts (media-keys)
+
+| Shortcut | Command | Name |
+| -------- | ------- | ---- |
+| `Super + Return` | `kitty` | Kitty |
+| `Super + e` | `nautilus` | Files |
+| `Super + z` | `flatpak run dev.zed.Zed` | Zed |
+| `Super + b` | `flatpak run com.brave.Browser` | Brave |
+| `Ctrl + Shift + Esc` | `gnome-system-monitor` | System Monitor |
+
+Source dump: `dconf/media-keys.dconf` → path `/org/gnome/settings-daemon/plugins/media-keys/`.
+
+### Window Manager Keybinds (wm)
+
+| Shortcut | Action |
+| -------- | ------ |
+| `Super + 1..5` | Switch to workspace 1–5 |
+| `Super + Alt + 1..5` | Move window to workspace 1–5 |
+| `Alt + F4` / `Super + q` | Close window |
+| `Super + Up` | Maximize |
+| `Super + h` / `Ctrl + Super + f` | Minimize (hide) |
+| `Alt + F7` / `Alt + F8` | Begin move / resize |
+| `Super + KP_Home/End/Page_Up/Next` | Move to corner (quadrants) |
+| `Super + KP_Left/Right/Up/Down` | Tile/move to side |
+| `Ctrl + Alt + d` / `Super + d` | Show desktop |
+| `Alt + F12` | Toggle above |
+| `Alt + F10` / `Super + f` | Toggle maximized |
+
+Source dump: `dconf/wm-keybindings.dconf` → path `/org/gnome/desktop/wm/keybindings/`.
+
+### Mutter + Shell Extras
+
+- `Super + Left/Right` (+ `KP_Left/KP_Right`) — toggle tiled left/right (`dconf/mutter-keybindings.dconf` → `/org/gnome/mutter/keybindings/`).
+- `Print` / `Alt+Print` / `Shift+Print` — screenshot / window / UI (`dconf/shell-keybindings.dconf` → `/org/gnome/shell/keybindings/`).
+
+### How to Restore on New Laptop
+
+```bash
+REPO=/home/julry/vscodefiles/linux-configs/gnome-setup
+dconf load /org/gnome/settings-daemon/plugins/media-keys/ < "$REPO/dconf/media-keys.dconf"
+dconf load /org/gnome/desktop/wm/keybindings/ < "$REPO/dconf/wm-keybindings.dconf"
+dconf load /org/gnome/shell/keybindings/ < "$REPO/dconf/shell-keybindings.dconf"
+dconf load /org/gnome/mutter/keybindings/ < "$REPO/dconf/mutter-keybindings.dconf"
+```
+
+Or use `gnome-setup/setup.sh` Section 4 loop — it loads all four automatically.
+
+---
+
 ## 4. Blur-my-shell (panel + applications only) + Animations Off
 
 Policy: panel blur ON, applications blur ON, dash-to-dock blur OFF (no dash-to-dock installed).
@@ -279,6 +332,10 @@ dconf load /org/gnome/shell/extensions/dash-to-panel/ < "$REPO/dconf/dash-to-pan
 dconf load /org/gnome/shell/extensions/blur-my-shell/panel/ < "$REPO/dconf/blur-my-shell-panel.dconf"
 dconf load /org/gnome/shell/extensions/blur-my-shell/applications/ < "$REPO/dconf/blur-my-shell-applications.dconf"
 dconf load /org/gnome/desktop/interface/ < "$REPO/dconf/interface.dconf"
+dconf load /org/gnome/settings-daemon/plugins/media-keys/ < "$REPO/dconf/media-keys.dconf"
+dconf load /org/gnome/desktop/wm/keybindings/ < "$REPO/dconf/wm-keybindings.dconf"
+dconf load /org/gnome/shell/keybindings/ < "$REPO/dconf/shell-keybindings.dconf"
+dconf load /org/gnome/mutter/keybindings/ < "$REPO/dconf/mutter-keybindings.dconf"
 ```
 
 Then re-apply Section 3–4 `gsettings`/`dconf write` trims (loads can revive the stale `dash-to-dock` blur key — the explicit `blur false` after load wins).
@@ -400,7 +457,7 @@ Expected `swapon --show` priorities:
 
 | Item | Default | New Value | Benefit |
 | -------------------------- | ------------- | ------------------ | -------------------------------------------------------- |
-| **vm.swappiness** | `60` | `180` | Leans on fast zram swap first; SSD swapfile as failsafe |
+| **vm.swappiness** | `60` | `200` (`game` 10) | Max zram first; SSD failsafe; `game` lowers for gaming |
 | **vm.page-cluster** | `0` | `0` | One page per swap I/O — no zram CPU waste |
 | **vm.vfs_cache_pressure** | `100` | `125` | Faster cache reclaim — RAM freed for editors/builds |
 | **vm.dirty_ratio** | `20` | `10` | Smaller writeback bursts — no save/git stalls |

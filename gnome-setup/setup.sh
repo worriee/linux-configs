@@ -118,6 +118,20 @@ else
 fi
 unset _FRESH_LINE
 
+# Swappiness profile aliases — game low, code max (idempotent)
+STEP "Swappiness aliases game/code"
+for _AL in "alias game='sudo /usr/sbin/sysctl -w vm.swappiness=10 >/dev/null && echo game: swappiness 10'" "alias code='sudo /usr/sbin/sysctl -w vm.swappiness=200 >/dev/null && echo code: swappiness 200'"; do
+    _KEY="${_AL%%=*}"
+    if grep -qF "$_AL" "$HOME_DIR/.bashrc" 2>/dev/null; then
+        OK "$_KEY already present"
+    else
+        sed -i "\|^${_KEY}=|d" "$HOME_DIR/.bashrc"
+        echo "$_AL" >> "$HOME_DIR/.bashrc"
+        OK "$_KEY added"
+    fi
+done
+unset _AL _KEY
+
 # Node.js memory ceiling (idempotent)
 STEP "Node.js memory ceiling (1536MB)"
 if grep -q 'max-old-space-size=1536' "$HOME_DIR/.bashrc" 2>/dev/null; then
@@ -168,8 +182,8 @@ else
 fi
 unset _WANT
 
-STEP "Restoring dconf dumps (dash-to-panel, blur-my-shell, interface)"
-for _pair in "dash-to-panel:/org/gnome/shell/extensions/dash-to-panel/" "blur-my-shell-panel:/org/gnome/shell/extensions/blur-my-shell/panel/" "blur-my-shell-applications:/org/gnome/shell/extensions/blur-my-shell/applications/" "interface:/org/gnome/desktop/interface/"; do
+STEP "Restoring dconf dumps (dash-to-panel, blur-my-shell, interface, keybinds)"
+for _pair in "dash-to-panel:/org/gnome/shell/extensions/dash-to-panel/" "blur-my-shell-panel:/org/gnome/shell/extensions/blur-my-shell/panel/" "blur-my-shell-applications:/org/gnome/shell/extensions/blur-my-shell/applications/" "interface:/org/gnome/desktop/interface/" "media-keys:/org/gnome/settings-daemon/plugins/media-keys/" "wm-keybindings:/org/gnome/desktop/wm/keybindings/" "shell-keybindings:/org/gnome/shell/keybindings/" "mutter-keybindings:/org/gnome/mutter/keybindings/"; do
     _file="${_pair%%:*}"; _path="${_pair#*:}"
     if [ -f "$REPO/dconf/${_file}.dconf" ]; then
         if dconf load "$_path" < "$REPO/dconf/${_file}.dconf" 2>/dev/null; then OK "dconf load $_file"
@@ -211,7 +225,7 @@ fi
 # ------------------------------------------------
 # 5. System tweaks (sudo)
 # ------------------------------------------------
-run_step "Swappiness 180 + page-cluster 0 (zram)" bash -c 'printf "vm.swappiness=180\nvm.page-cluster=0\n" | sudo tee /etc/sysctl.d/99-swappiness.conf >/dev/null && sudo sysctl --system >/dev/null'
+run_step "Swappiness 200 + page-cluster 0 (zram)" bash -c 'printf "vm.swappiness=200\nvm.page-cluster=0\n" | sudo tee /etc/sysctl.d/99-swappiness.conf >/dev/null && sudo sysctl --system >/dev/null'
 
 OK "bootloader untouched (by design)"
 OK "btrfs root — ext4 reserve N/A (snapper covers rollback)"
@@ -368,7 +382,7 @@ echo "==============================================="
 echo " DONE — summary"
 echo "==============================================="
 echo " applied : dotfiles (kitty, starship, fastfetch, opencode), .bashrc fresh alias,"
-echo "           GNOME extensions (3 IDs), dconf dumps, blur-my-shell panel+apps,"
+echo "           GNOME extensions (3 IDs), dconf dumps + keybinds, blur-my-shell panel+apps,"
 echo "           animations off, download-updates off, localsearch+evolution masked,"
 echo "           cups/avahi disabled (BT kept), swappiness, VM tuning, earlyoom,"
 echo "           zram swap (zstd, zram-generator), ModemManager disabled"
