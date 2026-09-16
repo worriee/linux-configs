@@ -157,16 +157,16 @@ fi
 fc-cache -f >/dev/null 2>&1 || true
 
 # Panel app icon referenced by dconf/dash-to-panel.dconf (show-apps-icon-file)
-STEP "Panel app icon (opensuse-icon.webp)"
-if [ -f "$REPO/assets/opensuse-icon.webp" ]; then
+STEP "Panel app icon (jm-icon.png)"
+if [ -f "$REPO/assets/jm-icon.png" ]; then
     mkdir -p "$HOME_DIR/Documents"
-    if cp -b "$REPO/assets/opensuse-icon.webp" "$HOME_DIR/Documents/opensuse-icon.webp" 2>/dev/null; then
-        OK "icon -> $HOME_DIR/Documents/opensuse-icon.webp"
+    if cp -b "$REPO/assets/jm-icon.png" "$HOME_DIR/Documents/jm-icon.png" 2>/dev/null; then
+        OK "icon -> $HOME_DIR/Documents/jm-icon.png"
     else
         WARN "icon copy failed"; FAILED_STEPS+=("panel icon")
     fi
 else
-    WARN "$REPO/assets/opensuse-icon.webp missing — icon skipped"; FAILED_STEPS+=("panel icon missing")
+    WARN "$REPO/assets/jm-icon.png missing — icon skipped"; FAILED_STEPS+=("panel icon missing")
 fi
 
 # ------------------------------------------------

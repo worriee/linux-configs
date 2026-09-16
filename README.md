@@ -36,13 +36,13 @@ Split-layout backup of my Linux setups incase of any worse cases. Most are AI ge
 | `gnome-setup/.config/opencode/`         | OpenCode global config (`opencode.jsonc` only)                                                                                                                                                     |
 | `gnome-setup/dconf/`                    | Text dumps only: `dash-to-panel.dconf`, `blur-my-shell-panel.dconf`, `blur-my-shell-applications.dconf`, `interface.dconf` (never the binary `~/.config/dconf/user`)                               |
 | `gnome-setup/extensions/list.txt`       | Enabled extensions (blur-my-shell, dash-to-panel, disable-workspace-switcher) — dirs reinstall via Extension Manager, then `dconf load`                                                            |
-| `gnome-setup/assets/opensuse-icon.webp` | Custom dash-to-panel app icon referenced by the dconf dump                                                                                                                                         |
+| `gnome-setup/assets/jm-icon.png` | Custom dash-to-panel app icon + fastfetch logo referenced by the dconf dump                                                                                                                        |
 | `xfce-setup/fresh-install.md`           | XFCE one-command guide (Mint/TW XFCE). No standalone GNOME fresh-install guide yet — use `gnome-setup/setup.md`                                                                                    |
 | `opencode.json`                         | OpenCode project configuration                                                                                                                                                                     |
 | `AGENTS.md`                             | Agent workspace instructions                                                                                                                                                                       |
 | `.opencode/`                            | Agent rules, memory, skills                                                                                                                                                                        |
 
-Hardened: XFCE wallpaper step warns + skips if `background.jpg` absent; GNOME icon auto-installs to `~/Documents/`; GNOME path rewrite covers `opencode.jsonc` + `.bashrc` + dconf dump; both scripts skip restart prompt when non-interactive.
+Hardened: XFCE wallpaper step warns + skips if `background.jpg` absent; GNOME jm-icon auto-installs to `~/Documents/` (panel + fastfetch share it); GNOME path rewrite covers `opencode.jsonc` + `.bashrc` + dconf dump; both scripts skip restart prompt when non-interactive.
 
 ## Getting Started on a New Machine
 

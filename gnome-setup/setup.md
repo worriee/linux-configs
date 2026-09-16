@@ -189,6 +189,8 @@ Panel layout itself restores from text dump:
 dconf load /org/gnome/shell/extensions/dash-to-panel/ < dconf/dash-to-panel.dconf
 ```
 
+Panel app icon is `~/Documents/jm-icon.png` (repo `assets/jm-icon.png`, auto-copied by `setup.sh`). Same file doubles as fastfetch logo.
+
 ---
 
 ## 3B. Keybindings (GNOME native, dconf only)
@@ -340,6 +342,8 @@ dconf load /org/gnome/mutter/keybindings/ < "$REPO/dconf/mutter-keybindings.dcon
 
 Then re-apply Section 3–4 `gsettings`/`dconf write` trims (loads can revive the stale `dash-to-dock` blur key — the explicit `blur false` after load wins).
 
+Requires `~/Documents/jm-icon.png` present first (`setup.sh` copies it from `assets/jm-icon.png`) — dash-to-panel + fastfetch share it.
+
 Snapper safety net (openSUSE, before dotfiles land):
 
 ```bash
@@ -355,6 +359,8 @@ Same Kitty/Starship stack as XFCE side. Files ship in repo (`.config/kitty/kitty
 Font note: JetBrains Mono comes from `xfce-setup/.local/share/fonts/` — not duplicated here. Install that set first on a fresh machine, then `fc-cache -f`.
 
 Starship hook + `NODE_OPTIONS` + `fresh` alias land in `~/.bashrc` (idempotent `grep -q` guards in `setup.sh`).
+
+Fastfetch logo is `~/Documents/jm-icon.png` via kitty graphics (`logo.type kitty`, `32x16`) — same file as panel icon, ships in `.config/fastfetch/config.jsonc`.
 
 ---
 
