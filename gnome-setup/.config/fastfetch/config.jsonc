@@ -13,149 +13,115 @@
   },
   "display": {
     "separator": " ",
+    "key": {
+      "type": "both-1",
+      "width": 0,
+      "paddingLeft": 2
+    },
     "color": {
-      "keys": "keys",
-      "title": "keys"
+      "keys": "38;2;131;165;152"
     }
   },
   "modules": [
     {
-      "key": "╔═══════════╗",
-      "type": "custom"
+      "type": "custom",
+      "format": "╭─────────────────julry@localhost─────────────────╮",
+      "outputColor": "38;2;131;165;152"
     },
     {
-      "key": "║ {#31}󰀄 user    {#keys}║",
-      "type": "title",
-      "format": "{user-name}"
+      "type": "os",
+      "key": "distro  ",
+      "format": "{pretty-name} {arch}"
     },
     {
-      "key": "║ {#32}󰇅 hname   {#keys}║",
-      "type": "title",
-      "format": "{host-name}"
+      "type": "kernel",
+      "key": "kernel  ",
+      "format": "{release}"
     },
     {
-      "key": "║ {#33}󰅐 uptime  {#keys}║",
-      "type": "uptime"
+      "type": "de",
+      "key": "desktop "
     },
     {
-      "key": "║ {#34}{icon} distro  {#keys}║",
-      "type": "os"
+      "type": "terminal",
+      "key": "term    ",
+      "keyIcon": ""
     },
     {
-      "key": "║ {#35}󰔢 kernel  {#keys}║",
-      "type": "kernel"
+      "type": "shell",
+      "key": "shell   "
     },
     {
-      "key": "╠═══════════╣",
-      "type": "custom"
+      "type": "theme",
+      "key": "theme   "
     },
     {
-      "key": "║ {#36}󰍄 desktop {#keys}║",
-      "type": "de"
+      "type": "icons",
+      "key": "icons   "
     },
     {
-      "key": "║ {#31}󰄛 term    {#keys}║",
-      "type": "terminal"
+      "type": "terminalfont",
+      "key": "font    "
     },
     {
-      "key": "║ {#32}󰑱 shell   {#keys}║",
-      "type": "shell"
+      "type": "uptime",
+      "key": "uptime  "
     },
     {
-      "key": "║ {#33}󰏘 theme   {#keys}║",
-      "type": "theme"
+      "type": "break"
     },
     {
-      "key": "║ {#34}󰌮 icons   {#keys}║",
-      "type": "icons"
-    },
-    {
-      "key": "║ {#35}󰛖 font    {#keys}║",
-      "type": "terminalfont"
-    },
-    {
-      "key": "╠═══════════╣",
-      "type": "custom"
-    },
-    {
-      "key": "║ {#36}󰓁 cpu     {#keys}║",
       "type": "cpu",
+      "key": "cpu     ",
       "showPeCoreCount": true
     },
     {
-      "key": "║ {#31}󰈮 gpu     {#keys}║",
       "type": "gpu",
+      "key": "gpu     ",
       "format": "{name}"
     },
     {
-      "key": "║ {#32}󰍙 res     {#keys}║",
       "type": "display",
+      "key": "display ",
       "format": "{width}x{height} @ {refresh-rate}Hz"
     },
     {
-      "key": "║ {#33}󰊸 memory  {#keys}║",
-      "type": "memory"
+      "type": "memory",
+      "key": "memory  "
     },
     {
-      "key": "║ {#34}󰓛 swap    {#keys}║",
-      "type": "swap"
+      "type": "swap",
+      "key": "swap    "
     },
     {
-      "key": "║ {#35}󰋊 disk    {#keys}║",
       "type": "disk",
-      "folders": "/"
+      "key": "disk    ",
+      "folders": "/",
+      "format": "{size-used} / {size-total} ({size-percentage}) · {filesystem}"
     },
     {
-      "key": "║ {#36}󰋊 data    {#keys}║",
-      "type": "disk",
-      "folders": "/mnt/Data"
+      "type": "break"
     },
     {
-      "key": "║ {#31}󰏖 pkgs    {#keys}║",
       "type": "packages",
+      "key": "packages",
       "format": "{rpm} (zypper), {flatpak-all} (flatpak)"
     },
     {
-      "key": "║ {#32}󰉭 network {#keys}║",
-      "type": "localip",
-      "format": "{ipv4} ({ifname})"
-    },
-    {
-      "key": "╠═══════════╣",
-      "type": "custom"
-    },
-    {
-      "key": "║ {#33}󰀰 since   {#keys}║",
-      "type": "command",
-      "text": "LC_ALL=C date -d \"@$(stat -c %W /)\" \"+%d %B %Y %I:%M %p\" 2>/dev/null || echo N/A"
-    },
-    {
-      "key": "║ {#34}󰅐 age     {#keys}║",
-      "type": "command",
-      "text": "echo \"$(( ($(date +%s) - $(stat -c %W /)) / 86400 )) days since install\""
-    },
-    {
-      "key": "║ {#35}󰁹 battery {#keys}║",
       "type": "battery",
+      "key": "battery ",
       "format": "{capacity} - {status}"
     },
     {
-      "key": "║ {#36}󰀰 date    {#keys}║",
       "type": "command",
-      "text": "date +\"%d %B %Y %I:%M %p\""
+      "key": "age     ",
+      "keyIcon": "",
+      "text": "echo \"$(( ($(date +%s) - $(stat -c %W /)) / 86400 )) days · since $(LC_ALL=C date -d \"@$(stat -c %W /)\" '+%d %b %Y')\""
     },
     {
-      "key": "╠═══════════╣",
-      "type": "custom"
-    },
-    {
-      "key": "║ {#39}󰏘 colors  {#keys}║",
-      "type": "colors",
-      "symbol": "circle"
-    },
-    {
-      "key": "╚═══════════╝",
-      "type": "custom"
+      "type": "custom",
+      "format": "╰─────────────────────────────────────────────────╯",
+      "outputColor": "38;2;131;165;152"
     }
   ]
 }
