@@ -457,6 +457,211 @@ Expected `swapon --show` priorities:
 
 ---
 
+## 12. Secure Boot Chain on the ESP (`/dev/nvme0n1p7`)
+
+### 12.0 What This Does
+
+Terminology first, because it is the part people get wrong: **a partition is never signed.** `/dev/nvme0n1p7` is a plain vfat EFI System Partition (`PARTUUID c12a7328-f81f-11d2-ba4b-00a0c93ec93b`) and needs no signature. What Secure Boot actually checks is the chain of **EFI binaries stored on that partition**, plus one machine key in NVRAM:
+
+1. `shim.efi` — first binary the firmware runs. Signed by openSUSE (and Microsoft, for firmware trust). Ships in the `shim` package, copied onto the ESP by `sdbootutil`.
+2. `systemd-bootx64.efi` — the loader. Signed by the openSUSE Secure Boot CA. Ships in the `systemd-boot` package.
+3. `<kernel-version>.efi` + `initrd` — one pair per installed kernel, written to `/boot/efi/loader/entries/` as type-1 boot entries by `kernel-install` (the `90-loaderentry.install` plugin from `udev`). **Pre-signed at build time by SUSE** — nothing is signed on this machine.
+4. The MOK (Machine Owner Key) list in NVRAM — holds the openSUSE Secure Boot CA so shim trusts everything above.
+
+Keep links 1–4 intact and the distro boots with Secure Boot enabled. Break any of them and the firmware either falls through to the Windows Boot Manager or refuses to start openSUSE.
+
+Scope: `setup.sh` deliberately never touches the bootloader (see its "bootloader untouched (by design)" messages). This section is **maintenance you run by hand**, and every step follows the same shape: **verify first → install only what is missing → then implement.**
+
+Verified live state on this machine at time of writing: Secure Boot `enabled (user)`, `BootCurrent: 0000` → `\EFI\systemd\shim.efi`, `Boot0001` Windows Boot Manager preserved, one enrolled MOK (`openSUSE Secure Boot CA`), `shim` 16.1-4.2, `systemd-boot` 261.2-1.2, `sdbootutil` 1+git20260909, `kernel-default` 7.2.5-1.1 + 7.2.6-1.1, BIOS V1.28, `fwupdmgr` reports no firmware updates.
+
+### 12.1 Packages — verify, install only if missing
+
+**Step 1 — verify what is installed:**
+
+```bash
+rpm -q shim systemd-boot sdbootutil mokutil kernel-default dracut btrfsprogs
+```
+
+_(Expected on a healthy machine: all seven report a version. Any `package ... is not installed` line goes to Step 2.)_
+
+**Step 2 — install only the missing ones:**
+
+```bash
+sudo zypper in shim systemd-boot sdbootutil mokutil kernel-default dracut btrfsprogs
+```
+
+All of these are official openSUSE packages (vendor `openSUSE`, packager `bugs.opensuse.org`), so plain `zypper in` resolves them. `zypper` skips what is already present, so this command is safe to run as-is.
+
+**Step 3 — do NOT install these:**
+
+| Package | Why not |
+| ------- | ------- |
+| `sbsigntools` | Provides `sbverify`/`sbsign`. Nothing here needs local signing — SUSE signs the kernel, initrd and loader at build time. Hand-signing replaces a trusted signature with an untrusted one and breaks the chain. |
+| `sbctl` | Arch/Fedora-style key manager. Conflicts with the SUSE chain and the MOK setup in 12.4. |
+| `grub2-efi-x64` | This machine boots **systemd-boot through shim**, not GRUB (`/usr/lib/grub2/` does not exist, `bootctl` reports `Product: systemd-boot 261.2`). Installing GRUB creates a second, unsigned-looking loader path on the same ESP. |
+
+Also already present and useful: `efibootmgr` 18-1.12, at `/usr/sbin/efibootmgr` — it is **not** on a normal user `PATH`, so call it by full path or via `sudo`.
+
+### 12.2 Verify the live chain (read-only)
+
+Run all six. Every one is non-destructive; this is the diagnostic that tells you whether 12.3 or 12.4 is even needed.
+
+```bash
+# 1. Is Secure Boot on?
+mokutil --sb-state
+
+# 2. What does the firmware think it booted, and is SB user- or setup-mode?
+bootctl status | grep -iE 'firmware|secure boot'
+
+# 3. Is the openSUSE CA enrolled in the MOK list?
+mokutil --list-enrolled | head -5
+
+# 4. What does NVRAM boot? (shim path + Windows keeper must both exist)
+sudo /usr/sbin/efibootmgr -v
+
+# 5. Is the signed loader actually present on the ESP?
+sudo ls -1 /boot/efi/EFI/systemd/
+
+# 6. Is the on-ESP bootloader/shim current with the installed packages?
+sudo sdbootutil needs-update
+```
+
+_(Expected: `SecureBoot enabled` · `Secure Boot: enabled (user)` · MOK subject `CN=openSUSE Secure Boot CA` · `efibootmgr` shows a `Boot0000`-style entry pointing at `\EFI\systemd\shim.efi` plus the separate Windows Boot Manager entry · `EFI/systemd/` contains `shim.efi` and `systemd-bootx64.efi` · `needs-update` reports the ESP bootloader/shim as current. Exact wording of `needs-update` varies by version — read the meaning, not the string.)_
+
+Optional deeper read, **must run as root** (it reads the btrfs root subvolume, and needs `btrfsprogs` from `/usr/sbin`):
+
+```bash
+sudo sdbootutil status
+```
+
+_(As a normal user this fails with `ERROR: Can't determine root subvolume: ... Operation not permitted` — expected, not a fault. With `sudo` it reports which bootloader and snapshot the machine boots, safe to attach to a bug report.)_
+
+### 12.3 Implement — reinstall the chain
+
+Only needed when 12.2 shows a missing/unsigned loader, after a firmware update, or after anything reformatted the ESP. All three commands write to the ESP and NVRAM; run them one at a time and re-verify 12.2 after each.
+
+```bash
+# Install bootloader + shim into the ESP with Secure Boot support,
+# and point an NVRAM boot entry at the shim binary
+sudo sdbootutil install --secure-boot
+
+# Re-check whether the on-ESP copy matches the installed packages
+sudo sdbootutil needs-update
+
+# If the versions disagree but needs-update refuses to act:
+sudo sdbootutil force-update
+
+# Rebuild the per-kernel boot entries (kernel + initrd pairs) if any are missing
+sudo sdbootutil add-all-kernels
+```
+
+Notes:
+
+- `install` is the same command used on this machine to restore Secure Boot originally. `--secure-boot` is the flag that selects the **shim** path instead of a bare loader — omitting it on a Secure Boot machine installs a chain the firmware will refuse.
+- `sudo sdbootutil update` updates bootloader and shim when a newer package version exists; add `--sync` to also allow downgrades so the ESP always matches the installed packages.
+- Entry inspection: `sudo sdbootutil list-entries`, `set-default ID`. Entry removal and ESP space reclamation live in Section 13.
+
+_(Expected after `install`: `bootctl status` still reports `Secure Boot: enabled (user)`, `efibootmgr` shows the shim entry present, `needs-update` reports current, and the machine boots the same kernel as before. Reboot once and confirm before touching anything else.)_
+
+### 12.4 Implement — enroll the MOK
+
+Only needed when Secure Boot sits in **setup mode**, or the firmware shows the blue **MokManager** screen on every boot. That happens after a BIOS "load setup defaults", a Secure Boot reset, an NVRAM/CMOS clear, or a firmware update. Symptom pair: `mokutil --sb-state` reports setup mode, and `bootctl status` does not say `enabled (user)`.
+
+**Step 1 — check whether the CA you are about to import is the one already trusted:**
+
+```bash
+openssl x509 -inform der -in /usr/share/efi/x86_64/shim-opensuse.der -noout -fingerprint -sha1 -subject
+mokutil --list-enrolled | head -5
+```
+
+_(Expected: both show the same SHA1 fingerprint — `46:59:83:8C:82:03:FE:15:52:AD:19:E1:86:09:DB:21:7E:3A:D2:4F` — and subject `CN=openSUSE Secure Boot CA, C=DE, L=Nuremberg, O=openSUSE Project`. Matching fingerprints prove the DER in `/usr/share/efi` is the enrolled key.)_
+
+**Step 2 — import it:**
+
+```bash
+sudo mokutil --import /usr/share/efi/x86_64/shim-opensuse.der
+```
+
+**Step 3 — reboot and complete enrollment in MokManager:**
+
+At the blue screen: **Enroll MOK** → **Continue** → set an openSUSE password → **Reboot**. The password is mandatory — MokManager does not accept a blank one, and there is no recovery path if it is forgotten, so pick something you will remember.
+
+**Step 4 — verify:**
+
+```bash
+mokutil --sb-state
+mokutil --list-enrolled | head -5
+```
+
+_(Expected: `SecureBoot enabled` and the openSUSE Secure Boot CA listed again.)_
+
+Do **not** import `/etc/uefi/certs/F8CEAA94.crt`. It is a different certificate (`CN=openSUSE Secure Boot Signkey`, SHA1 `F8:CE:AA:94:…`) — this is the key SUSE signs the kernel and initrd with (`kernel-default`'s scriptlets pass `--certs F8CEAA94` and the package ships this cert). The MOK holds the CA it chains to, not this cert, so enrolling it is not part of the working setup. Import only the CA in Step 2.
+
+### 12.5 Failure modes
+
+| Symptom | Cause | Fix |
+| ------- | ----- | --- |
+| Boots Windows instead of openSUSE | NVRAM default/`BootCurrent` changed, or the shim entry was dropped | `sudo /usr/sbin/efibootmgr -v` to see what is left → 12.3 `sudo sdbootutil install --secure-boot` |
+| Blue MokManager screen on every boot | Secure Boot reset to setup mode, MOK lost | 12.4 (import + reboot + Enroll MOK) |
+| New kernel missing from the boot menu after an update | ESP full, or `kernel-install` failed mid-write | Section 13 (reclaim ESP space) → `sudo sdbootutil add-all-kernels` |
+| `bootctl status` says setup mode, not `enabled (user)` | MOK list empty for this platform | 12.4 |
+| `sdbootutil status` errors about root subvolume | Run without `sudo` (or `btrfsprogs` not on `PATH`) | `sudo sdbootutil status` |
+
+---
+
+## 13. Kernel Lifecycle and ESP Space
+
+### 13.0 What This Does
+
+Separate from Section 12 because it is a **disk** problem, not a signing problem. Removing old kernels changes nothing about the shim/MOK chain — signatures stay valid, nothing needs re-signing. It lives here because the only thing on `/dev/nvme0n1p7` that grows over time is kernels: every `kernel-install` writes a new entry (kernel + initrd) into `/boot/efi/loader/entries/`, and every removed kernel leaves that space behind until garbage-collected.
+
+Measured on this machine: ESP 1022M total, 555M used (55%), 468M free, 16 boot entries across the installed snapshots — roughly **35M per entry**. That headroom is a few kernel updates from gone, and a full ESP makes `kernel-install` fail mid-write, which is how a working machine ends up with a missing kernel in the boot menu.
+
+### 13.1 Verify (read-only)
+
+```bash
+# 1. How much room is left?
+df -h /boot/efi
+
+# 2. Which kernels are installed?
+sudo kernel-install list
+
+# 3. How many boot entries exist per snapshot? (loader/entries is root-only readable)
+sudo sdbootutil list-entries
+```
+
+_(Expected: `df` well under 100% used, `kernel-install list` showing at least two versions, and `list-entries` showing `+` on the default entry and `-` on the one currently booted.)_
+
+### 13.2 Implement — reclaim space
+
+```bash
+# 1. Remove an old kernel, keeping the running one plus one fallback
+sudo kernel-install remove 7.2.5-1-default
+
+# 2. Drop boot entries whose kernels no longer exist
+sudo sdbootutil cleanup
+
+# 3. Reap orphaned ESP images (kernels/initrds no entry names)
+sudo bootctl garbage-collect
+
+# 4. Rebuild entries if one is now missing
+sudo sdbootutil add-all-kernels
+
+# 5. Verify the reclaimed space
+df -h /boot/efi
+```
+
+_(Expected: free space climbs back up, the running kernel's entry is untouched, and the machine boots the same kernel as before. Reboot and confirm before moving to another kernel.)_
+
+### 13.3 Rules and caveats
+
+- **Never remove the running kernel.** `uname -r` first; if the version matches, pick an older one.
+- **Keep two kernels minimum** — the running one plus `7.2.5` as a fallback, so a bad update still has somewhere to land (the same 16 snapshots are an independent net; kernel removal does not touch them).
+- Only reclaim when the ESP is actually tight. Removing a kernel you might want is worse than a slightly full partition.
+- `sdbootutil cleanup` is entry bookkeeping; `bootctl garbage-collect` is the one that reclaims blocks. Both are safe to re-run.
+
+---
+
 ## Quick Reference Summary Table
 
 ### Performance (Kernel & Services)
@@ -479,6 +684,8 @@ Expected `swapon --show` priorities:
 | Item | Default | New Value | Benefit |
 | ---------------------- | ------------ | ------------------- | ---------------------------------------------- |
 | **Bootloader** | — | `untouched` | openSUSE GRUB left alone by design |
+| **Secure Boot** | `setup mode` / unenrolled | shim chain + openSUSE CA MOK, `enabled (user)` | ESP boots signed; verify per Section 12 |
+| **ESP free space** | ~35M per kernel entry | reclaim via `kernel-install remove` + `garbage-collect` | Kernel updates keep succeeding (Section 13) |
 | **ext4 reserved blocks** | `5%` | `N/A (btrfs)` | Snapper `pre-dotfiles` snapshot instead |
 | **ZRAM swap** | SSD swapfile | `zstd`, `min(ram)` via `zram-generator` | Fast compressed swap; less SSD wear |
 | **MT7902 Wi-Fi/BT** _(opt)_ | _none_ | `deprecated, in-kernel mt7921e active` | Vendored DKMS driver skipped |
