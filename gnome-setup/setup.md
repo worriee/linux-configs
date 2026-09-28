@@ -352,7 +352,7 @@ sudo snapper create -d "pre-dotfiles $(date +%Y-%m-%d)"
 
 ---
 
-## 8. Kitty Terminal + Starship Powerline Prompt
+## 8. Kitty Terminal + Starship Prompt (Tokyo Night preset)
 
 Same Kitty/Starship stack as XFCE side. Files ship in repo (`.config/kitty/kitty.conf`, `.config/kitty/current-theme.conf`, `.config/starship.toml`); `setup.sh` copies them with `cp -rb`.
 
@@ -703,5 +703,5 @@ _(Expected: free space climbs back up, the running kernel's entry is untouched, 
 | **Evolution services** | `active` | `masked + autostart Hidden=true` | No PIM background noise |
 | **CUPS / Avahi** | `enabled` | `disabled` | Less background overhead; BT kept |
 | **Kitty terminal** | stock config | JetBrains Mono 11, 85% opacity, Gruvbox Dark Soft | Gruvbox-consistent GPU terminal |
-| **Starship prompt** | plain bash | Gruvbox powerline | Git-aware visual prompt |
+| **Starship prompt** | plain bash | Tokyo Night preset (rounded, git + time) | Git-aware visual prompt |
 | **fresh alias** | _none_ | `restart dev-zram0.swap + display-manager` | One-word session reset |

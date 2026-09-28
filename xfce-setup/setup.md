@@ -799,9 +799,9 @@ xfconf-query -c xfce4-keyboard-shortcuts -p "/commands/custom/<Super>r" -n -t st
 
 ---
 
-## 9. Kitty Terminal + Starship Powerline Prompt
+## 9. Kitty Terminal + Starship Prompt (Tokyo Night preset)
 
-Installs the Kitty GPU-accelerated terminal and the Starship prompt engine, with JetBrains Mono typography, picom frosted-glass transparency, Gruvbox Dark Soft colors, and a single-line Powerline arrow prompt. `Super+Return` opens Kitty (already in the keybinds file, Section 3).
+Installs the Kitty GPU-accelerated terminal and the Starship prompt engine, with JetBrains Mono typography, picom frosted-glass transparency, Gruvbox Dark Soft terminal colors, and the Tokyo Night prompt preset (rounded segments, git + time, input below the bar). `Super+Return` opens Kitty (already in the keybinds file, Section 3).
 
 ### 9A. Install Kitty Terminal
 
