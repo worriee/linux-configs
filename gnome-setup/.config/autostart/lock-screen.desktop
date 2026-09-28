@@ -1,0 +1,6 @@
+[Desktop Entry]
+Type=Application
+Name=Lock screen on login
+Comment=Lock the session shortly after autologin so boot lands on the lockscreen
+Exec=sh -c 'sleep 3; /usr/bin/loginctl lock-session'
+X-GNOME-Autostart-enabled=true
