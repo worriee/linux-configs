@@ -8,120 +8,120 @@
     "padding": {
       "top": 1,
       "left": 2,
-      "right": 2
-    }
+      "right": 2,
+    },
   },
   "display": {
     "separator": " ",
     "key": {
       "type": "both-1",
       "width": 0,
-      "paddingLeft": 2
+      "paddingLeft": 2,
     },
     "color": {
-      "keys": "38;2;131;165;152"
-    }
+      "keys": "38;2;131;165;152",
+    },
   },
   "modules": [
     {
       "type": "custom",
-      "format": "╭─────────────────julry@localhost─────────────────╮",
-      "outputColor": "38;2;131;165;152"
+      "format": "╭─────────────────────────────────────────────────╮",
+      "outputColor": "38;2;131;165;152",
     },
     {
       "type": "os",
       "key": "distro  ",
-      "format": "{pretty-name} {arch}"
+      "format": "{pretty-name} {arch}",
     },
     {
       "type": "kernel",
       "key": "kernel  ",
-      "format": "{release}"
+      "format": "{release}",
     },
     {
       "type": "de",
-      "key": "desktop "
+      "key": "desktop ",
     },
     {
       "type": "terminal",
       "key": "term    ",
-      "keyIcon": ""
+      "keyIcon": "",
     },
     {
       "type": "shell",
-      "key": "shell   "
+      "key": "shell   ",
     },
     {
       "type": "theme",
-      "key": "theme   "
+      "key": "theme   ",
     },
     {
       "type": "icons",
-      "key": "icons   "
+      "key": "icons   ",
     },
     {
       "type": "terminalfont",
-      "key": "font    "
+      "key": "font    ",
     },
     {
       "type": "uptime",
-      "key": "uptime  "
+      "key": "uptime  ",
     },
     {
-      "type": "break"
+      "type": "break",
     },
     {
       "type": "cpu",
       "key": "cpu     ",
-      "showPeCoreCount": true
+      "showPeCoreCount": true,
     },
     {
       "type": "gpu",
       "key": "gpu     ",
-      "format": "{name}"
+      "format": "{name}",
     },
     {
       "type": "display",
       "key": "display ",
-      "format": "{width}x{height} @ {refresh-rate}Hz"
+      "format": "{width}x{height} @ {refresh-rate}Hz",
     },
     {
       "type": "memory",
-      "key": "memory  "
+      "key": "memory  ",
     },
     {
       "type": "swap",
-      "key": "swap    "
+      "key": "swap    ",
     },
     {
       "type": "disk",
       "key": "disk    ",
       "folders": "/",
-      "format": "{size-used} / {size-total} ({size-percentage}) · {filesystem}"
+      "format": "{size-used} / {size-total} ({size-percentage}) · {filesystem}",
     },
     {
-      "type": "break"
+      "type": "break",
     },
     {
       "type": "packages",
       "key": "packages",
-      "format": "{rpm} (zypper), {flatpak-all} (flatpak)"
+      "format": "{rpm} (zypper), {flatpak-all} (flatpak)",
     },
     {
       "type": "battery",
       "key": "battery ",
-      "format": "{capacity} - {status}"
+      "format": "{capacity} - {status}",
     },
     {
       "type": "command",
       "key": "age     ",
       "keyIcon": "",
-      "text": "echo \"$(( ($(date +%s) - $(stat -c %W /)) / 86400 )) days · since $(LC_ALL=C date -d \"@$(stat -c %W /)\" '+%d %b %Y')\""
+      "text": "echo \"$(( ($(date +%s) - $(stat -c %W /)) / 86400 )) days · since $(LC_ALL=C date -d \"@$(stat -c %W /)\" '+%d %b %Y')\"",
     },
     {
       "type": "custom",
       "format": "╰─────────────────────────────────────────────────╯",
-      "outputColor": "38;2;131;165;152"
-    }
-  ]
+      "outputColor": "38;2;131;165;152",
+    },
+  ],
 }
