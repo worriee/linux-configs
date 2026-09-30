@@ -1,0 +1,79 @@
+{
+  "layer": "top",
+  "position": "top",
+  "height": 38,
+  "modules-left": ["sway/workspaces", "wlr/taskbar"],
+  "modules-center": ["clock"],
+  "modules-right": ["memory", "backlight", "pulseaudio", "bluetooth", "network", "custom/notification", "custom/battery", "custom/power"],
+
+  "sway/workspaces": {
+    "disable-scroll": true,
+    "persistent-workspaces": {"1": [], "2": [], "3": [], "4": [], "5": []}
+  },
+  "wlr/taskbar": {
+    "format": "{icon}",
+    "on-click": "activate",
+    "tooltip-format": "{title}"
+  },
+
+  "clock": {
+    "format": "{:%a | %b %d | %I:%M %p}",
+    "tooltip-format": "{:%A %B %d %Y %H:%M}"
+  },
+  "memory": {
+    "interval": 1,
+    "format": " {used:.1f}G/{total:.0f}G",
+    "tooltip-format": "{used:.1f}GB of {total:.0f}GB ({percentage}%)",
+    "on-click": "gnome-system-monitor"
+  },
+  "backlight": {
+    "device": "amdgpu_bl1",
+    "format": " {percent}%",
+    "tooltip-format": "Brightness {percent}%"
+  },
+  "pulseaudio": {
+    "format": "{icon} {volume}%",
+    "format-muted": " muted",
+    "format-icons": {"default": ["", "", ""]},
+    "scroll-step": 2,
+    "max-volume": 100,
+    "tooltip-format": "Volume {volume}%"
+  },
+  "network": {
+    "format-wifi": "  {essid}",
+    "format-ethernet": " {ipaddr}",
+    "format-linked": " (no ip)",
+    "format-disconnected": "  OFF",
+    "format-disabled": "  OFF",
+    "tooltip-format-wifi": "{essid} {signalStrength}%",
+    "on-click": "/home/julry/.local/bin/wifi-menu.sh"
+  },
+  "bluetooth": {
+    "format": " OFF",
+    "format-disabled": " OFF",
+    "format-off": " OFF",
+    "format-on": " OFF",
+    "format-no-controller": " OFF",
+    "format-connected": " {device_alias}",
+    "tooltip-format-connected": "{device_enumerate}",
+    "on-click": "/home/julry/.local/bin/bluetooth-menu.sh"
+  },
+  "tray": {"spacing": 8},
+  "custom/notification": {
+    "return-type": "json",
+    "exec": "/home/julry/.local/bin/mako-bell.sh",
+    "on-click": "/home/julry/.local/bin/notif-center.sh",
+    "interval": 5,
+    "tooltip-format": "Click toggles quiet mode, Super+N shows history"
+  },
+  "custom/battery": {
+    "return-type": "json",
+    "exec": "/home/julry/.local/bin/battery-pct.sh",
+    "interval": 30
+  },
+  "custom/power": {
+    "format": "",
+    "on-click": "/home/julry/.local/bin/power-menu.sh",
+    "tooltip-format": "Power menu"
+  }
+}

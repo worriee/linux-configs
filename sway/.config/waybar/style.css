@@ -1,0 +1,55 @@
+* {
+  font-family: "JetBrainsMonoNL Nerd Font", "JetBrains Mono";
+  font-size: 12px;
+}
+/* blue glass pills — layout frozen, text stays white */
+window#waybar {
+  background: transparent;
+  color: #ffffff;
+}
+#workspaces, #clock, #memory, #backlight, #pulseaudio, #network, #bluetooth, #custom-notification, #custom-battery, #custom-power {
+  background: rgba(52, 83, 114, 0.20);
+  border: 1px solid rgba(98, 131, 166, 0.5);
+  border-radius: 12px;
+  margin: 7px 4px;
+  padding: 4px 12px;
+  min-height: 22px;
+}
+/* taskbar: styling lives on buttons so the empty state collapses to nothing */
+#taskbar {
+  background: transparent;
+  border: none;
+  margin: 7px 0;
+  padding: 0;
+}
+#taskbar button {
+  background: rgba(52, 83, 114, 0.20);
+  border: 1px solid rgba(98, 131, 166, 0.5);
+  border-radius: 12px;
+  margin: 0 4px;
+  padding: 4px 10px;
+}
+#workspaces button {
+  color: #ffffff;
+  padding: 0 8px;
+  border-radius: 8px;
+}
+#workspaces button.focused {
+  background: #4e6f90;
+  color: #282828;
+}
+#workspaces button.urgent {
+  background: #cc241d;
+  color: #ffffff;
+}
+#taskbar button.active {
+  background: rgba(78, 111, 144, 0.3);
+}
+/* all module text white — gruvbox kept in bg/border only */
+#clock, #memory, #backlight, #pulseaudio, #network, #bluetooth, #custom-notification, #custom-battery, #custom-power {
+  color: #ffffff;
+}
+#clock {
+  font-weight: bold;
+}
+#custom-notification.dnd { color: #928374; }

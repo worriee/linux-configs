@@ -1,0 +1,9 @@
+show=drun
+term=kitty
+prompt=Search
+width=640
+height=480
+image_size=48
+allow_images=true
+insensitive=true
+cache-file=/dev/null

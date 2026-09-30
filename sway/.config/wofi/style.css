@@ -1,0 +1,31 @@
+/* wofi — centered translucent launcher, Gruvbox */
+window {
+  margin: 0;
+  background-color: rgba(40, 40, 40, 0.92);
+  color: #ebdbb2;
+  border: 2px solid #4e6f90;
+  border-radius: 14px;
+}
+#input {
+  margin: 16px 16px 8px 16px;
+  padding: 8px 12px;
+  background-color: rgba(60, 56, 54, 0.95);
+  color: #ebdbb2;
+  border: none;
+  border-radius: 10px;
+  font-size: 15px;
+}
+#inner-box {
+  margin: 8px 16px 16px 16px;
+}
+#entry {
+  padding: 10px 12px;
+  border-radius: 10px;
+}
+#entry:selected {
+  background-color: #4e6f90;
+  color: #282828;
+}
+#img {
+  margin-right: 12px;
+}
