@@ -1,9 +1,10 @@
-# linux-configs (XFCE + GNOME)
+# linux-dotfiles
 
 Split-layout backup of my Linux setups incase of any worse cases.
 
 - `xfce-setup/` — Mint/Ubuntu (apt), XFCE-only
 - `gnome-setup/` — openSUSE Tumbleweed (zypper), GNOME-only
+- `sway/` — sway wm
 
 ## Contents
 
