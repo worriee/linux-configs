@@ -4,7 +4,7 @@
   "height": 38,
   "modules-left": ["sway/workspaces", "wlr/taskbar"],
   "modules-center": ["clock"],
-  "modules-right": ["memory", "backlight", "pulseaudio", "bluetooth", "network", "custom/notification", "custom/battery", "custom/power"],
+  "modules-right": ["memory", "backlight", "pulseaudio", "bluetooth", "network", "custom/battery", "custom/power"],
 
   "sway/workspaces": {
     "disable-scroll": true,
@@ -18,7 +18,8 @@
 
   "clock": {
     "format": "{:%a | %b %d | %I:%M %p}",
-    "tooltip-format": "{:%A %B %d %Y %H:%M}"
+    "tooltip-format": "{:%A %B %d %Y %H:%M}",
+    "on-click": "gnome-calendar"
   },
   "memory": {
     "interval": 1,
@@ -59,13 +60,6 @@
     "on-click": "/home/julry/.local/bin/bluetooth-menu.sh"
   },
   "tray": {"spacing": 8},
-  "custom/notification": {
-    "return-type": "json",
-    "exec": "/home/julry/.local/bin/mako-bell.sh",
-    "on-click": "/home/julry/.local/bin/notif-center.sh",
-    "interval": 5,
-    "tooltip-format": "Click toggles quiet mode, Super+N shows history"
-  },
   "custom/battery": {
     "return-type": "json",
     "exec": "/home/julry/.local/bin/battery-pct.sh",

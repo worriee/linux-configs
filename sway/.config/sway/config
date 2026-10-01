@@ -22,10 +22,10 @@ set $menu /home/julry/.local/bin/launcher.sh
 gaps inner 8
 gaps outer 4
 
-# Focused window border — steel blue 80%
+# Focused window border — gray #999999 80%
 # ponytail: alpha in border only, window opacity untouched
-client.focused #4e6f90CC #4e6f90CC #282828 #4e6f90CC #4e6f90CC
-client.unfocused #3c3836 #3c3836 #928374 #3c3836 #3c3836
+client.focused #999999CC #999999CC #111111 #999999CC #999999CC
+client.unfocused #333333 #333333 #999999 #333333 #333333
 default_border pixel 4
 
 ### Output configuration
@@ -166,6 +166,10 @@ input type:keyboard {
     # Toggle the current focus between tiling and floating mode
     bindsym $mod+Shift+space floating toggle
 
+    # Calendar opens floating centered (dropdown feel, closes with Q)
+    # ponytail: app_id guess from desktop name, confirm via get_tree if missed
+    for_window [app_id="org.gnome.Calendar"] floating enable, resize set 800 600, move position center
+
     # Swap focus between the tiling area and the floating area
     bindsym $mod+space focus mode_toggle
 
@@ -231,6 +235,9 @@ bindsym $mod+r mode "resize"
     # Screenshot with grim: full (Print) and region (Shift+Print), save + copy
     bindsym Print exec /home/julry/.local/bin/shot.sh full
     bindsym Shift+Print exec /home/julry/.local/bin/shot.sh region
+
+    # Power key opens menu (needs logind HandlePowerKey=ignore, see README)
+    bindsym --locked XF86PowerOff exec /home/julry/.local/bin/power-menu.sh
 
 #
 # Status Bar:
